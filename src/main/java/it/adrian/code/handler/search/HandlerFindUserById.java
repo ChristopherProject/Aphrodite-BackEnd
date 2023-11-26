@@ -12,11 +12,9 @@ import java.util.Map;
 
 public class HandlerFindUserById implements HttpHandler {
 
-
     @Override
     public void handle(HttpExchange t) throws IOException {
-
-        String jwt = extractTokenFromHeader(t.getRequestHeaders().getFirst("Authorization"));
+        final String jwt = extractTokenFromHeader(t.getRequestHeaders().getFirst("Authorization"));
         if (jwt == null || !Querys.validateJWT(jwt)) {
             sendUnauthorizedResponse(t);
             return;
@@ -26,7 +24,10 @@ public class HandlerFindUserById implements HttpHandler {
         String responseJson;
         if (query.contains("user_id") && !(queryParams.get("user_id") == null || queryParams.get("user_id").equals(""))) {
             if (Querys.findUserById(queryParams.get("user_id")) != null) {
-                responseJson = "{\"user_id\": \"" + queryParams.get("user_id") + "\", \"username\": \"" + Querys.findUserById(queryParams.get("user_id")) + "\" }";
+                responseJson = "{\"user_id\": \"" + Querys.findUserById(queryParams.get("user_id")).get("user_id")  + "\"," +
+                        " \"username\": \"" + Querys.findUserById(queryParams.get("user_id")).get("username") +
+                        "\", \"biography\": \"" + Querys.findUserById(queryParams.get("user_id")).get("biography") +
+                        "\",\"profile_pic\": \""+Querys.findUserById(queryParams.get("user_id")).get("profile_pic")+"\" }";
             } else {
                 responseJson = "{\"error\": \"user not found invalid user_id\"}";
             }

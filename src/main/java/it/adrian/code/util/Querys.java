@@ -10,10 +10,7 @@ import org.json.JSONObject;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 public class Querys {
 
@@ -137,7 +134,8 @@ public class Querys {
      * @param userId this is your user id (every account have 1 id unique)
      * @return this function indicate your account data by id, it contains some information's like username, chat_id etc..
      */
-    public static String findUserById(String userId) {
+    public static HashMap<String, String> findUserById(String userId) {
+        final HashMap<String, String> user_information = new LinkedHashMap<>();
         try (MongoClient mongoClient = MongoClients.create(Config.CONNECTION_STRING)) {
             MongoDatabase database = mongoClient.getDatabase(Config.DATABASE_NAME);
             MongoCollection<Document> collection = database.getCollection(Config.COLLECTION_NAME);
@@ -147,7 +145,11 @@ public class Querys {
 
             if (result.iterator().hasNext()) {
                 Document userDocument = result.iterator().next();
-                return userDocument.getString("username");
+                user_information.put("user_id", userDocument.getString("_id"));
+                user_information.put("username", userDocument.getString("username"));
+                user_information.put("biography", userDocument.getString("biography"));
+                user_information.put("profile_pic", userDocument.getString("profile_pic"));
+                return user_information;
             } else {
                 return null;
             }
@@ -197,7 +199,8 @@ public class Querys {
      * @param username account username (unique on database)
      * @return this function return your account data by username, it contains some information's like username, profile_photo, chat_id etc..
      */
-    public static String findUserByUsername(String username) {
+    public static HashMap<String, String>  findUserByUsername(String username) {
+        final HashMap<String, String> user_information = new LinkedHashMap<>();
         try (MongoClient mongoClient = MongoClients.create(Config.CONNECTION_STRING)) {
             MongoDatabase database = mongoClient.getDatabase(Config.DATABASE_NAME);
             MongoCollection<Document> collection = database.getCollection(Config.COLLECTION_NAME);
@@ -207,7 +210,11 @@ public class Querys {
 
             if (result.iterator().hasNext()) {
                 Document userDocument = result.iterator().next();
-                return userDocument.getString("_id");
+                user_information.put("user_id", userDocument.getString("_id"));
+                user_information.put("username", userDocument.getString("username"));
+                user_information.put("biography", userDocument.getString("biography"));
+                user_information.put("profile_pic", userDocument.getString("profile_pic"));
+                return user_information;
             } else {
                 return null;
             }

@@ -32,7 +32,7 @@ public class HandlerUpdateProfileBiography implements HttpHandler {
             String decodedJwt = new String(decodedBytes, StandardCharsets.UTF_8);
             JSONObject jsonObject = new JSONObject(decodedJwt);
             String currentUsername = jsonObject.getString("username");
-            if (Querys.updateBiography(Querys.findUserByUsername(currentUsername), queryParams.get("profile_biography"))) {
+            if (Querys.updateBiography(Querys.findUserByUsername(currentUsername).get("username"), queryParams.get("profile_biography"))) {
                 responseJson = "{\"success\": \"profile biography was update for account " + currentUsername + "\"}";
             } else {
                 responseJson = "{\"error\": \"cannot update profile biography for user " + currentUsername + "\"}";
