@@ -1,0 +1,33 @@
+package it.adrian.code;
+
+import com.sun.net.httpserver.HttpServer;
+import it.adrian.code.handler.profile.HandlerUpdateProfileBiography;
+import it.adrian.code.handler.profile.HandlerUpdateProfilePhoto;
+import it.adrian.code.handler.search.HandlerFindUserById;
+import it.adrian.code.handler.auth.HandlerLogin;
+import it.adrian.code.handler.auth.HandlerRegistration;
+import it.adrian.code.handler.search.HandlerFindUserByName;
+import it.adrian.code.handler.user.HandlerChangePassword;
+
+import java.net.InetSocketAddress;
+
+public final class Main {
+
+    public static void main(String... args) throws Exception {
+        final HttpServer server = HttpServer.create(new InetSocketAddress(419), 0);
+        server.createContext("/api/login", new HandlerLogin());//POST, http://localhost:419/api/login, { "username": "Adrian", "password": "JAC4192" }
+        server.createContext("/api/register", new HandlerRegistration());//POST, http://localhost:419/api/register, { "username": "Adrian", "password": "JAC4192" }
+        server.createContext("/api/getUserById", new HandlerFindUserById());//GET, http://localhost:419/api/getUserById?user_id=5288764
+        server.createContext("/api/getUserByName", new HandlerFindUserByName());//GET, http://localhost:419/api/getUserByName?username=Adrian
+        server.createContext("/api/changePassword", new HandlerChangePassword());//GET, http://localhost:419/api/changePassword?current_password=JAC419&new_password=JAC4192
+        server.createContext("/api/updateProfilePhoto", new HandlerUpdateProfilePhoto());//GET, http://localhost:419/api/updateProfilePhoto?profile_pic_path=https://i.imgur.com/18ND4et.png
+        server.createContext("/api/updateProfileBiography", new HandlerUpdateProfileBiography());//GET, http://localhost:419/api/updateProfileBiography?profile_biography=hey%20im%20using%20aphrodite
+        //TODO: sendMessage, getUpdate, sendPhotos, sendVideoFile, sendAudioFile (Acc x2)
+        //mhhh...Usare Firebase o fare un db interno?
+        server.setExecutor(null);
+        server.start();
+        System.out.println("«service started on port 419»");
+        System.runFinalization();
+        System.gc();
+    }
+}
