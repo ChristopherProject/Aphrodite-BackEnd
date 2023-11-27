@@ -233,6 +233,14 @@ public class Querys {
         }
     }
 
+    /***
+     *
+     * @param fromID basically message id of mitten
+     * @param toID basically message id destination
+     * @param message this is message sent from user to user
+     * @param timestamp this is an unix timestamp of message UTC
+     * @return this function return boolean true when message sent
+     */
     public static boolean sendMessage(String fromID, String toID, String message, String timestamp) {
         try (MongoClient mongoClient = MongoClients.create(Config.CONNECTION_STRING)) {
             MongoDatabase database = mongoClient.getDatabase(Config.DATABASE_NAME);
@@ -241,13 +249,59 @@ public class Querys {
             do {
                 randomId = MathUtil.generateRandomId();
             } while (MathUtil.isIdAlreadyUsed(collection, randomId));
-            Document userDocument = new Document().append("_id", randomId).append("from", fromID).append("to", toID).append("message", message).append("timestamp", timestamp);
+            Document userDocument = new Document().append("_id", randomId).append("from", fromID).append("to", toID).append("message", message.replace("%20", " ")).append("timestamp", timestamp);
             collection.insertOne(userDocument);
             return true;
         }catch (Exception e){
             return false;
         }
     }
+
+    public static HashMap<String, String> getMessage(String messageID) {
+        final HashMap<String, String> user_information = new LinkedHashMap<>();
+        try (MongoClient mongoClient = MongoClients.create(Config.CONNECTION_STRING)) {
+            MongoDatabase database = mongoClient.getDatabase(Config.DATABASE_NAME);
+            MongoCollection<Document> collection = database.getCollection(Config.MESSAGE_COLLECTION_NAME);
+
+            Document query = new Document("_id", messageID);
+            FindIterable<Document> result = collection.find(query);
+
+            if (result.iterator().hasNext()) {
+                Document userDocument = result.iterator().next();
+                user_information.put("message_id", userDocument.getString("_id"));
+                user_information.put("from", userDocument.getString("from"));
+                user_information.put("to", userDocument.getString("to"));
+                user_information.put("timestamp", userDocument.getString("timestamp"));
+                return user_information;
+            } else {
+                return null;
+            }
+        }
+    }
+
+    public static boolean updateMessage(String messageID, String newMessage) {
+        try (MongoClient mongoClient = MongoClients.create(Config.CONNECTION_STRING)) {
+            MongoDatabase database = mongoClient.getDatabase(Config.DATABASE_NAME);
+            MongoCollection<Document> collection = database.getCollection(Config.MESSAGE_COLLECTION_NAME);
+            Document query = new Document("_id", messageID);
+            Document userDocument = collection.find(query).first();
+            if (userDocument != null) {
+                Bson message = Updates.set("message", newMessage.replace("%20", " "));
+                Bson timestamp = Updates.set("timestamp", MathUtil.getUnixTimestampEpoch());
+                Bson filter = Filters.eq("_id", messageID);
+                List<Bson> updates = new LinkedList<>();
+                updates.add(message);
+                updates.add(timestamp);
+                collection.updateMany(filter, updates);
+                return true;
+            } else {
+                return false;
+            }
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
 
     public static Map<String, String> parseURLQuery(String query) {
         Map<String, String> result = new HashMap<>();
