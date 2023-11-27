@@ -50,7 +50,7 @@ public class HandlerEditMessage implements HttpHandler {
                 JSONObject json = new JSONObject(decodedJwt);
                 String currentUsername = json.getString("username");
                 String userID = Querys.findUserByUsername(currentUsername).get("user_id");
-                if (Querys.getMessage(queryParams.get("message_id")).get("from").equals(userID)) {
+                if (Querys.getMessageByID(queryParams.get("message_id")).get("from").equals(userID)) {
                     if (Querys.updateMessage(queryParams.get("message_id"), queryParams.get("message_content"))) {
                         responseJson = "{\"success\": \"message updated correctly\"}";
                     } else {

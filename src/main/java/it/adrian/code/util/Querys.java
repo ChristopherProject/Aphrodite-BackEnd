@@ -11,6 +11,9 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 public class Querys {
 
@@ -211,7 +214,7 @@ public class Querys {
      * @param username account username (unique on database)
      * @return this function return your account data by username, it contains some information's like username, profile_photo, chat_id etc..
      */
-    public static HashMap<String, String>  findUserByUsername(String username) {
+    public static HashMap<String, String> findUserByUsername(String username) {
         final HashMap<String, String> user_information = new LinkedHashMap<>();
         try (MongoClient mongoClient = MongoClients.create(Config.CONNECTION_STRING)) {
             MongoDatabase database = mongoClient.getDatabase(Config.DATABASE_NAME);
@@ -239,7 +242,7 @@ public class Querys {
      * @param toID basically message id destination
      * @param message this is message sent from user to user
      * @param timestamp this is an unix timestamp of message UTC
-     * @return this function return boolean true when message sent
+     * @return this function return boolean true when message sent.
      */
     public static boolean sendMessage(String fromID, String toID, String message, String timestamp) {
         try (MongoClient mongoClient = MongoClients.create(Config.CONNECTION_STRING)) {
@@ -252,12 +255,17 @@ public class Querys {
             Document userDocument = new Document().append("_id", randomId).append("from", fromID).append("to", toID).append("message", message.replace("%20", " ")).append("timestamp", timestamp);
             collection.insertOne(userDocument);
             return true;
-        }catch (Exception e){
+        } catch (Exception e) {
             return false;
         }
     }
 
-    public static HashMap<String, String> getMessage(String messageID) {
+    /***
+     *
+     * @param messageID this id indicate current message (every message have unique)
+     * @return this function returned all data of message by id in one hashmap.
+     */
+    public static HashMap<String, String> getMessageByID(String messageID) {
         final HashMap<String, String> user_information = new LinkedHashMap<>();
         try (MongoClient mongoClient = MongoClients.create(Config.CONNECTION_STRING)) {
             MongoDatabase database = mongoClient.getDatabase(Config.DATABASE_NAME);
@@ -279,6 +287,43 @@ public class Querys {
         }
     }
 
+    /***
+     *
+     * @param userID this data are your user_id (this data is unique for every account)
+     * @param chatID this data represent other account user_id (unique data)
+     * @return this function returned correspondence between two users.
+     */
+    public static List<HashMap<String, String>> getMessagesBetweenUsers(String userID, String chatID) {
+        final List<HashMap<String, String>> messages = new ArrayList<>();
+        try (MongoClient mongoClient = MongoClients.create(Config.CONNECTION_STRING)) {
+            MongoDatabase database = mongoClient.getDatabase(Config.DATABASE_NAME);
+            MongoCollection<Document> collection = database.getCollection(Config.MESSAGE_COLLECTION_NAME);
+            Document querySentMessage = new Document("from", userID).append("to", chatID);
+            FindIterable<Document> result1 = collection.find(querySentMessage);
+            Document queryReceivedMessage = new Document("from", chatID).append("to", userID);
+            FindIterable<Document> result2 = collection.find(queryReceivedMessage);
+            List<Document> allResults = Stream.concat(StreamSupport.stream(result1.spliterator(), false), StreamSupport.stream(result2.spliterator(), false)).collect(Collectors.toList());
+            for (Document userDocument : allResults) {
+                HashMap<String, String> userInformation = new LinkedHashMap<>();
+                userInformation.put("_id", userDocument.getString("_id"));
+                userInformation.put("from", userDocument.getString("from"));
+                userInformation.put("to", userDocument.getString("to"));
+                userInformation.put("message", userDocument.getString("message"));
+                userInformation.put("timestamp", userDocument.getString("timestamp"));
+                messages.add(userInformation);
+            }
+        } catch (Exception e) {
+            return null;
+        }
+        return messages;
+    }
+
+    /***
+     *
+     * @param messageID this id indicate current message (every message have unique)
+     * @param newMessage this indicates new message to replace current message value
+     * @return this function return boolean to change current message text successfully.
+     */
     public static boolean updateMessage(String messageID, String newMessage) {
         try (MongoClient mongoClient = MongoClients.create(Config.CONNECTION_STRING)) {
             MongoDatabase database = mongoClient.getDatabase(Config.DATABASE_NAME);
@@ -301,7 +346,6 @@ public class Querys {
             return false;
         }
     }
-
 
     public static Map<String, String> parseURLQuery(String query) {
         Map<String, String> result = new HashMap<>();

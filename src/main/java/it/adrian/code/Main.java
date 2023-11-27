@@ -27,8 +27,8 @@ public final class Main {
         server.createContext("/api/updateProfileBiography", new HandlerUpdateProfileBiography());//GET, http://localhost:419/api/updateProfileBiography?profile_biography=hey%20im%20using%20aphrodite
         server.createContext("/api/sendMessage", new HandlerSendMessage());//POST, http://localhost:419/api/sendMessage?chat_id=6741019, { "message": "ciao, come stai?" }
         server.createContext("/api/editMessage", new HandlerEditMessage()); //POST, http://localhost:419/api/editMessage?message_id=9824250, { "message_content": "messaggio cambiato!" }
-        server.createContext("/api/getUpdate", new HandlerChatUpdate()); //TODO: implementare questo
-        //TODO: getUpdate, sendPhotos, sendVideoFile, sendAudioFile (Acc x2)
+        server.createContext("/api/getUpdate", new HandlerChatUpdate()); //GET, http://localhost:419/api/getUpdate?chat_id=6741019 (id del utente la cui chat con lui vuoi vedere, se metti il tuo non va ovviamente)
+        //TODO: sendPhotos, sendVideoFile, sendAudioFile (Acc x2)
         server.setExecutor(null);
         server.start();
         System.out.println("«service started on port 419»");
