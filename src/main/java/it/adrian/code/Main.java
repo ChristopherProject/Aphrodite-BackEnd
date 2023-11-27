@@ -1,6 +1,7 @@
 package it.adrian.code;
 
 import com.sun.net.httpserver.HttpServer;
+import it.adrian.code.handler.chat.HandlerSendMessage;
 import it.adrian.code.handler.profile.HandlerUpdateProfileBiography;
 import it.adrian.code.handler.profile.HandlerUpdateProfilePhoto;
 import it.adrian.code.handler.search.HandlerFindUserById;
@@ -22,7 +23,8 @@ public final class Main {
         server.createContext("/api/changePassword", new HandlerChangePassword());//GET, http://localhost:419/api/changePassword?current_password=JAC419&new_password=JAC4192
         server.createContext("/api/updateProfilePhoto", new HandlerUpdateProfilePhoto());//GET, http://localhost:419/api/updateProfilePhoto?profile_pic_path=https://i.imgur.com/18ND4et.png
         server.createContext("/api/updateProfileBiography", new HandlerUpdateProfileBiography());//GET, http://localhost:419/api/updateProfileBiography?profile_biography=hey%20im%20using%20aphrodite
-        //TODO: sendMessage, getUpdate, sendPhotos, sendVideoFile, sendAudioFile (Acc x2)
+        server.createContext("/api/sendMessage", new HandlerSendMessage());//GET, http://localhost:419/api/sendMessage?chat_id=7838069&message=ciao
+        //TODO: edit/sendMessage, getUpdate, sendPhotos, sendVideoFile, sendAudioFile (Acc x2)
         //mhhh...Usare Firebase o fare un db interno?
         server.setExecutor(null);
         server.start();

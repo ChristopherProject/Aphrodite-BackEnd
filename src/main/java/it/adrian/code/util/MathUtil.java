@@ -6,6 +6,8 @@ import org.bson.Document;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Random;
 
 public class MathUtil {
@@ -41,5 +43,14 @@ public class MathUtil {
     public static boolean verifyPassword(String enteredPassword, String storedHashPassword) {
         String enteredPasswordHash = encrypt(enteredPassword);
         return enteredPasswordHash.equals(storedHashPassword);
+    }
+
+    public static String getUnixTimestampEpoch() {
+        long currentTimeMillis = System.currentTimeMillis();
+        long epochTimeSeconds = currentTimeMillis / 1000;
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Date date = new Date(epochTimeSeconds * 1000);
+        String formattedTime = sdf.format(date);
+        return formattedTime;
     }
 }

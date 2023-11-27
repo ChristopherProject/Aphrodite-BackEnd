@@ -23,7 +23,7 @@ public class Querys {
     public static boolean registerUser(String username, String password) {
         try (MongoClient mongoClient = MongoClients.create(Config.CONNECTION_STRING)) {
             MongoDatabase database = mongoClient.getDatabase(Config.DATABASE_NAME);
-            MongoCollection<Document> collection = database.getCollection(Config.COLLECTION_NAME);
+            MongoCollection<Document> collection = database.getCollection(Config.USER_COLLECTION_NAME);
             String randomId;
             do {
                 randomId = MathUtil.generateRandomId();
@@ -46,7 +46,7 @@ public class Querys {
     public static String authJWTLogin(String username, String password) {
         try (MongoClient mongoClient = MongoClients.create(Config.CONNECTION_STRING)) {
             MongoDatabase database = mongoClient.getDatabase(Config.DATABASE_NAME);
-            MongoCollection<Document> collection = database.getCollection(Config.COLLECTION_NAME);
+            MongoCollection<Document> collection = database.getCollection(Config.USER_COLLECTION_NAME);
             if (!existed(username)) {
                 return "{\"error\": \"user isn't present in database\"}";
             }
@@ -72,7 +72,7 @@ public class Querys {
     public static boolean validateJWT(String jwt) {
         try (MongoClient mongoClient = MongoClients.create(Config.CONNECTION_STRING)) {
             MongoDatabase database = mongoClient.getDatabase(Config.DATABASE_NAME);
-            MongoCollection<Document> collection = database.getCollection(Config.COLLECTION_NAME);
+            MongoCollection<Document> collection = database.getCollection(Config.USER_COLLECTION_NAME);
 
             byte[] decodedBytes = Base64.getDecoder().decode(jwt.getBytes(StandardCharsets.UTF_8));
             String decodedJwt = new String(decodedBytes, StandardCharsets.UTF_8);
@@ -98,7 +98,7 @@ public class Querys {
     public static boolean changePassword(String username, String oldPassword, String newPassword) {
         try (MongoClient mongoClient = MongoClients.create(Config.CONNECTION_STRING)) {
             MongoDatabase database = mongoClient.getDatabase(Config.DATABASE_NAME);
-            MongoCollection<Document> collection = database.getCollection(Config.COLLECTION_NAME);
+            MongoCollection<Document> collection = database.getCollection(Config.USER_COLLECTION_NAME);
             if (!existed(username)) {
                 return false;
             }
@@ -122,7 +122,7 @@ public class Querys {
     private static boolean existed(String username) {
         try (MongoClient mongoClient = MongoClients.create(Config.CONNECTION_STRING)) {
             MongoDatabase database = mongoClient.getDatabase(Config.DATABASE_NAME);
-            MongoCollection<Document> collection = database.getCollection(Config.COLLECTION_NAME);
+            MongoCollection<Document> collection = database.getCollection(Config.USER_COLLECTION_NAME);
             Document query = new Document("username", username);
             FindIterable<Document> result = collection.find(query);
             return result.iterator().hasNext();
@@ -138,7 +138,7 @@ public class Querys {
         final HashMap<String, String> user_information = new LinkedHashMap<>();
         try (MongoClient mongoClient = MongoClients.create(Config.CONNECTION_STRING)) {
             MongoDatabase database = mongoClient.getDatabase(Config.DATABASE_NAME);
-            MongoCollection<Document> collection = database.getCollection(Config.COLLECTION_NAME);
+            MongoCollection<Document> collection = database.getCollection(Config.USER_COLLECTION_NAME);
 
             Document query = new Document("_id", userId);
             FindIterable<Document> result = collection.find(query);
@@ -165,7 +165,7 @@ public class Querys {
     public static boolean updateBiography(String userId, String biography) {
         try (MongoClient mongoClient = MongoClients.create(Config.CONNECTION_STRING)) {
             MongoDatabase database = mongoClient.getDatabase(Config.DATABASE_NAME);
-            MongoCollection<Document> collection = database.getCollection(Config.COLLECTION_NAME);
+            MongoCollection<Document> collection = database.getCollection(Config.USER_COLLECTION_NAME);
             Document query = new Document("_id", userId);
             Document userDocument = collection.find(query).first();
             if (userDocument != null) {
@@ -190,7 +190,7 @@ public class Querys {
     public static boolean updateProfilePhoto(String userId, String profile_pic) {
         try (MongoClient mongoClient = MongoClients.create(Config.CONNECTION_STRING)) {
             MongoDatabase database = mongoClient.getDatabase(Config.DATABASE_NAME);
-            MongoCollection<Document> collection = database.getCollection(Config.COLLECTION_NAME);
+            MongoCollection<Document> collection = database.getCollection(Config.USER_COLLECTION_NAME);
             Document query = new Document("_id", userId);
             Document userDocument = collection.find(query).first();
             if (userDocument != null) {
@@ -215,7 +215,7 @@ public class Querys {
         final HashMap<String, String> user_information = new LinkedHashMap<>();
         try (MongoClient mongoClient = MongoClients.create(Config.CONNECTION_STRING)) {
             MongoDatabase database = mongoClient.getDatabase(Config.DATABASE_NAME);
-            MongoCollection<Document> collection = database.getCollection(Config.COLLECTION_NAME);
+            MongoCollection<Document> collection = database.getCollection(Config.USER_COLLECTION_NAME);
 
             Document query = new Document("username", username);
             FindIterable<Document> result = collection.find(query);
@@ -230,6 +230,22 @@ public class Querys {
             } else {
                 return null;
             }
+        }
+    }
+
+    public static boolean sendMessage(String fromID, String toID, String message, String timestamp) {
+        try (MongoClient mongoClient = MongoClients.create(Config.CONNECTION_STRING)) {
+            MongoDatabase database = mongoClient.getDatabase(Config.DATABASE_NAME);
+            MongoCollection<Document> collection = database.getCollection(Config.MESSAGE_COLLECTION_NAME);
+            String randomId;
+            do {
+                randomId = MathUtil.generateRandomId();
+            } while (MathUtil.isIdAlreadyUsed(collection, randomId));
+            Document userDocument = new Document().append("_id", randomId).append("from", fromID).append("to", toID).append("message", message).append("timestamp", timestamp);
+            collection.insertOne(userDocument);
+            return true;
+        }catch (Exception e){
+            return false;
         }
     }
 
