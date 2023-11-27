@@ -1,6 +1,7 @@
 package it.adrian.code;
 
 import com.sun.net.httpserver.HttpServer;
+import it.adrian.code.handler.chat.HandlerChatUpdate;
 import it.adrian.code.handler.chat.HandlerEditMessage;
 import it.adrian.code.handler.chat.HandlerSendMessage;
 import it.adrian.code.handler.profile.HandlerUpdateProfileBiography;
@@ -25,7 +26,8 @@ public final class Main {
         server.createContext("/api/updateProfilePhoto", new HandlerUpdateProfilePhoto());//GET, http://localhost:419/api/updateProfilePhoto?profile_pic_path=https://i.imgur.com/18ND4et.png
         server.createContext("/api/updateProfileBiography", new HandlerUpdateProfileBiography());//GET, http://localhost:419/api/updateProfileBiography?profile_biography=hey%20im%20using%20aphrodite
         server.createContext("/api/sendMessage", new HandlerSendMessage());//POST, http://localhost:419/api/sendMessage?chat_id=6741019, { "message": "ciao, come stai?" }
-        server.createContext("/api/editMessage", new HandlerEditMessage()); //GET, http://localhost:419/api/editMessage?message_id=9824250&message_content=joke
+        server.createContext("/api/editMessage", new HandlerEditMessage()); //POST, http://localhost:419/api/editMessage?message_id=9824250, { "message_content": "messaggio cambiato!" }
+        server.createContext("/api/getUpdate", new HandlerChatUpdate()); //TODO: implementare questo
         //TODO: getUpdate, sendPhotos, sendVideoFile, sendAudioFile (Acc x2)
         server.setExecutor(null);
         server.start();
