@@ -156,6 +156,12 @@ public class Querys {
         }
     }
 
+    /***
+     *
+     * @param userId this is your user id (every account have 1 id unique)
+     * @param biography this is a biography of your profile (every profile can have 1)
+     * @return this function return boolean about update profile biography process working correctly.
+     */
     public static boolean updateBiography(String userId, String biography) {
         try (MongoClient mongoClient = MongoClients.create(Config.CONNECTION_STRING)) {
             MongoDatabase database = mongoClient.getDatabase(Config.DATABASE_NAME);
@@ -175,6 +181,12 @@ public class Querys {
         }
     }
 
+    /***
+     *
+     * @param userId this is your user id (every account have 1 id unique)
+     * @param profile_pic this is path of your profile pic choose
+     * @return this function return boolean about update profile photo process working correctly.
+     */
     public static boolean updateProfilePhoto(String userId, String profile_pic) {
         try (MongoClient mongoClient = MongoClients.create(Config.CONNECTION_STRING)) {
             MongoDatabase database = mongoClient.getDatabase(Config.DATABASE_NAME);

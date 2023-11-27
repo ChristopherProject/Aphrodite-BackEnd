@@ -32,7 +32,7 @@ public class HandlerUpdateProfilePhoto implements HttpHandler {
             String decodedJwt = new String(decodedBytes, StandardCharsets.UTF_8);
             JSONObject jsonObject = new JSONObject(decodedJwt);
             String currentUsername = jsonObject.getString("username");
-            if (Querys.updateProfilePhoto(Querys.findUserByUsername(currentUsername).get("username"), queryParams.get("profile_pic_path"))) {
+            if (Querys.updateProfilePhoto(Querys.findUserByUsername(currentUsername).get("user_id"), queryParams.get("profile_pic_path"))) {
                 responseJson = "{\"success\": \"profile photo was update for account " + currentUsername + "\"}";
             } else {
                 responseJson = "{\"error\": \"cannot update profile photo for user " + currentUsername + "\"}";

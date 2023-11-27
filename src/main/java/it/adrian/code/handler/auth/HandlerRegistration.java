@@ -36,6 +36,16 @@ public class HandlerRegistration implements HttpHandler {
             String responseJson;
             if (requestBody.contains("username") && !(jsonObject.getString("username") == null || jsonObject.getString("username").equals("")) && requestBody.contains("password") && !(jsonObject.getString("password") == null || jsonObject.getString("password").equals(""))) {
                 boolean success = Querys.registerUser(jsonObject.getString("username"), jsonObject.getString("password"));
+                if(jsonObject.getString("password").length() <  8){
+                    Headers headers = t.getResponseHeaders();
+                    headers.set("User-Agent", Config.CUSTOM_USER_AGENT);
+                    headers.set("Content-Type", "application/json");
+                    t.sendResponseHeaders(400, 0);
+                    try (OutputStream os = t.getResponseBody()) {
+                        os.write("{\"error\": \"too short password, please select another one\"}".getBytes());
+                    }
+                    return;
+                }
                 String tmp = MathUtil.encrypt(jsonObject.getString("password"));
                 String data = "{\"state\": \"success\", \"username\": \"" + jsonObject.getString("username") + "\", \"hash_password\": \"" + tmp + "\"}";
                 responseJson = success ? data : "{\"state\": \"failed\", \"error\": \"this username is already taken\"}";
