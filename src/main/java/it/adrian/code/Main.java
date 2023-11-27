@@ -24,10 +24,9 @@ public final class Main {
         server.createContext("/api/changePassword", new HandlerChangePassword());//GET, http://localhost:419/api/changePassword?current_password=JAC419&new_password=JAC4192
         server.createContext("/api/updateProfilePhoto", new HandlerUpdateProfilePhoto());//GET, http://localhost:419/api/updateProfilePhoto?profile_pic_path=https://i.imgur.com/18ND4et.png
         server.createContext("/api/updateProfileBiography", new HandlerUpdateProfileBiography());//GET, http://localhost:419/api/updateProfileBiography?profile_biography=hey%20im%20using%20aphrodite
-        server.createContext("/api/sendMessage", new HandlerSendMessage());//GET, http://localhost:419/api/sendMessage?chat_id=7838069&message=ciao
-        server.createContext("/api/editMessage", new HandlerEditMessage()); //TODO: Testare questa api
+        server.createContext("/api/sendMessage", new HandlerSendMessage());//POST, http://localhost:419/api/sendMessage?chat_id=6741019, { "message": "ciao, come stai?" }
+        server.createContext("/api/editMessage", new HandlerEditMessage()); //GET, http://localhost:419/api/editMessage?message_id=9824250&message_content=joke
         //TODO: getUpdate, sendPhotos, sendVideoFile, sendAudioFile (Acc x2)
-        //mhhh...Usare Firebase o fare un db interno?
         server.setExecutor(null);
         server.start();
         System.out.println("«service started on port 419»");

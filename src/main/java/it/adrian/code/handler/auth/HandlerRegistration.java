@@ -68,7 +68,7 @@ public class HandlerRegistration implements HttpHandler {
         Headers headers = t.getResponseHeaders();
         headers.set("User-Agent", Config.CUSTOM_USER_AGENT);
         headers.set("Content-Type", "application/json");
-        t.sendResponseHeaders(401, 0);
+        t.sendResponseHeaders(405, 0);
         try (OutputStream os = t.getResponseBody()) {
             os.write("{\"error\": \"405 Method Not Allowed\"}".getBytes());
         }
