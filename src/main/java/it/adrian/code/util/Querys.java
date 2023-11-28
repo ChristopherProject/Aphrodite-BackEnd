@@ -3,6 +3,7 @@ package it.adrian.code.util;
 import com.mongodb.client.*;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Updates;
+import com.mongodb.client.result.DeleteResult;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.json.JSONObject;
@@ -338,6 +339,27 @@ public class Querys {
                 updates.add(message);
                 updates.add(timestamp);
                 collection.updateMany(filter, updates);
+                return true;
+            } else {
+                return false;
+            }
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /***
+     *
+     * @param messageID this id indicate current message (every message have unique)
+     * @return this function return boolean to check deletion successfully of current message.
+     */
+    public static boolean deleteMessage(String messageID) {
+        try (MongoClient mongoClient = MongoClients.create(Config.CONNECTION_STRING)) {
+            MongoDatabase database = mongoClient.getDatabase(Config.DATABASE_NAME);
+            MongoCollection<Document> collection = database.getCollection(Config.MESSAGE_COLLECTION_NAME);
+            Bson query = Filters.eq("_id", messageID);
+            DeleteResult result = collection.deleteOne(query);
+            if (result.getDeletedCount() > 0) {
                 return true;
             } else {
                 return false;
