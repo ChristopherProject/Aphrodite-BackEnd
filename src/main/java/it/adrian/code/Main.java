@@ -1,5 +1,6 @@
 package it.adrian.code;
 
+import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpServer;
 import it.adrian.code.handler.chat.HandlerChatUpdate;
 import it.adrian.code.handler.chat.HandlerDeleteMessage;
@@ -12,6 +13,7 @@ import it.adrian.code.handler.auth.HandlerLogin;
 import it.adrian.code.handler.auth.HandlerRegistration;
 import it.adrian.code.handler.search.HandlerFindUserByName;
 import it.adrian.code.handler.user.HandlerChangePassword;
+import it.adrian.code.util.Config;
 
 import java.net.InetSocketAddress;
 
@@ -19,6 +21,15 @@ public final class Main {
 
     public static void main(String... args) throws Exception {
         final HttpServer server = HttpServer.create(new InetSocketAddress(419), 0);
+        server.createContext("/", exchange -> {
+            if (exchange.getRequestMethod().equalsIgnoreCase("OPTIONS")) {
+                Headers headers = exchange.getResponseHeaders();
+                headers.set("Access-Control-Allow-Origin", Config.CORS_ORIGIN_PROTECTION);
+                headers.set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+                headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization, User-Agent");
+                exchange.sendResponseHeaders(200, -1); // 200 OK senza corpo per OPTIONS
+            }
+        });
         System.out.println("«Aphrodite» init auth request..");
         server.createContext("/api/login", new HandlerLogin());//POST, http://localhost:419/api/login, { "username": "Adrian", "password": "JAC4192" }
         server.createContext("/api/register", new HandlerRegistration());//POST, http://localhost:419/api/register, { "username": "Adrian", "password": "JAC4192" }
@@ -33,7 +44,7 @@ public final class Main {
         server.createContext("/api/editMessage", new HandlerEditMessage());//POST, http://localhost:419/api/editMessage?message_id=9824250, { "message_content": "messaggio cambiato!" }
         server.createContext("/api/deleteMessage", new HandlerDeleteMessage());//GET, http://localhost:419/api/deleteMessage?message_id=123123123
         server.createContext("/api/getUpdate", new HandlerChatUpdate());//GET, http://localhost:419/api/getUpdate?chat_id=6741019 (id del utente la cui chat con lui vuoi vedere, se metti il tuo non va ovviamente)
-        //TODO: sendPhotos, sendVideoFile, sendAudioFile (Acc x2)
+        //TODO: replyMessage, sendPhoto, sendVideoFile, sendAudioFile (Acc x2)
         server.setExecutor(null);
         server.start();
         System.out.println("«Aphrodite» server init done. the service started on port 419");

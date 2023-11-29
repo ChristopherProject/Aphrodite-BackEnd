@@ -17,6 +17,13 @@ public class HandlerUpdateProfilePhoto implements HttpHandler {
 
     @Override
     public void handle(HttpExchange t) throws IOException {
+        if (t.getRequestMethod().equalsIgnoreCase("OPTIONS")) {
+            Headers headers = t.getResponseHeaders();
+            headers.set("Access-Control-Allow-Origin", Config.CORS_ORIGIN_PROTECTION);
+            headers.set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+            headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization, User-Agent");
+            t.sendResponseHeaders(200, -1); // 200 OK senza corpo per OPTIONS
+        }
 
         String jwt = extractTokenFromHeader(t.getRequestHeaders().getFirst("Authorization"));
         if (jwt == null || !Querys.validateJWT(jwt)) {
@@ -43,6 +50,7 @@ public class HandlerUpdateProfilePhoto implements HttpHandler {
         Headers headers = t.getResponseHeaders();
         headers.set("User-Agent", Config.CUSTOM_USER_AGENT);
         headers.set("Content-Type", "application/json");
+        headers.set("Access-Control-Allow-Origin", Config.CORS_ORIGIN_PROTECTION);
         t.sendResponseHeaders(200, responseJson.getBytes().length);
         OutputStream os = t.getResponseBody();
         os.write(responseJson.getBytes());
