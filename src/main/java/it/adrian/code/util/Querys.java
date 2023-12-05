@@ -1,14 +1,20 @@
 package it.adrian.code.util;
 
 import com.mongodb.client.*;
+import com.mongodb.client.gridfs.GridFSBucket;
+import com.mongodb.client.gridfs.GridFSBuckets;
+import com.mongodb.client.gridfs.GridFSDownloadStream;
+import com.mongodb.client.gridfs.GridFSUploadStream;
+import com.mongodb.client.gridfs.model.GridFSUploadOptions;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Updates;
 import com.mongodb.client.result.DeleteResult;
 import org.bson.Document;
 import org.bson.conversions.Bson;
+import org.bson.types.ObjectId;
 import org.json.JSONObject;
 
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -32,7 +38,7 @@ public class Querys {
             do {
                 randomId = MathUtil.generateRandomId();
             } while (MathUtil.isIdAlreadyUsed(collection, randomId));
-            if (existed(username)) {
+            if (uniqueUserIDCheck(username)) {
                 return false;
             }
             Document userDocument = new Document().append("_id", randomId).append("username", username).append("hash_password", MathUtil.encrypt(password));
@@ -51,7 +57,7 @@ public class Querys {
         try (MongoClient mongoClient = MongoClients.create(Config.CONNECTION_STRING)) {
             MongoDatabase database = mongoClient.getDatabase(Config.DATABASE_NAME);
             MongoCollection<Document> collection = database.getCollection(Config.USER_COLLECTION_NAME);
-            if (!existed(username)) {
+            if (!uniqueUserIDCheck(username)) {
                 return "{\"error\": \"user isn't present in database\"}";
             }
             Document userDocument = collection.find(Filters.eq("username", username)).first();
@@ -103,7 +109,7 @@ public class Querys {
         try (MongoClient mongoClient = MongoClients.create(Config.CONNECTION_STRING)) {
             MongoDatabase database = mongoClient.getDatabase(Config.DATABASE_NAME);
             MongoCollection<Document> collection = database.getCollection(Config.USER_COLLECTION_NAME);
-            if (!existed(username)) {
+            if (!uniqueUserIDCheck(username)) {
                 return false;
             }
             Document userDocument = collection.find(Filters.eq("username", username)).first();
@@ -123,7 +129,7 @@ public class Querys {
      * @param username account username (unique on database)
      * @return this function return boolean to see if user are existed in database.
      */
-    private static boolean existed(String username) {
+    private static boolean uniqueUserIDCheck(String username) {
         try (MongoClient mongoClient = MongoClients.create(Config.CONNECTION_STRING)) {
             MongoDatabase database = mongoClient.getDatabase(Config.DATABASE_NAME);
             MongoCollection<Document> collection = database.getCollection(Config.USER_COLLECTION_NAME);
@@ -359,13 +365,93 @@ public class Querys {
             MongoCollection<Document> collection = database.getCollection(Config.MESSAGE_COLLECTION_NAME);
             Bson query = Filters.eq("_id", messageID);
             DeleteResult result = collection.deleteOne(query);
-            if (result.getDeletedCount() > 0) {
-                return true;
-            } else {
-                return false;
-            }
+            return result.getDeletedCount() > 0;
         } catch (Exception e) {
             return false;
+        }
+    }
+
+    /***
+     *
+     * @param userId this is your user id (every account has a unique id)
+     * @param file the file to be inserted
+     * @param fileName the name of the file
+     * @param contentType the content type of the file (e.g., "image/jpeg", "application/pdf")
+     * @return this function return boolean of uploading media from user successfully.
+     */
+    public static boolean uploadMedia(String userId, File file, String fileName, String contentType) {
+        try (MongoClient mongoClient = MongoClients.create(Config.CONNECTION_STRING)) {
+            MongoDatabase database = mongoClient.getDatabase(Config.DATABASE_NAME);
+            GridFSBucket gridFSBucket = GridFSBuckets.create(database, Config.MEDIA_COLLECTION_NAME);
+            ObjectId fileId = saveFileToGridFS(gridFSBucket, file, fileName, contentType);
+            String mediaId;
+            do {
+                mediaId = MathUtil.generateRandomId();
+            } while (MathUtil.isIdAlreadyUsed(database.getCollection(Config.MEDIA_COLLECTION_NAME), mediaId));
+            if (uniqueMediaIDCheck(mediaId)) {
+                return false;
+            }
+            Document mediaDocument = new Document("_id", new ObjectId())
+                    .append("user_id", userId)
+                    .append("file_data_id", fileId)
+                    .append("file_name", fileName)
+                    .append("content_type", contentType);
+            database.getCollection(Config.MEDIA_COLLECTION_NAME).insertOne(mediaDocument);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /***
+     *
+     * @param file_data_id id of file to read.
+     * @return it returned a byte array from object id of file in medias collection.
+     */
+    public static byte[] readFileBytesFromMediaCollection(ObjectId file_data_id) {
+        try (MongoClient mongoClient = MongoClients.create(Config.CONNECTION_STRING)) {
+            MongoDatabase database = mongoClient.getDatabase(Config.DATABASE_NAME);
+            GridFSBucket gridFSBucket = GridFSBuckets.create(database, Config.MEDIA_COLLECTION_NAME);
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            GridFSDownloadStream downloadStream = gridFSBucket.openDownloadStream(file_data_id);
+            byte[] buffer = new byte[1024];
+            int bytesRead;
+            while ((bytesRead = downloadStream.read(buffer)) != -1) {
+                outputStream.write(buffer, 0, bytesRead);
+            }
+            downloadStream.close();
+            return outputStream.toByteArray();
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /***
+     *
+     * @param mediaID account username (unique on database)
+     * @return this function return boolean to see if media id existed in database.
+     */
+    private static boolean uniqueMediaIDCheck(String mediaID) {
+        try (MongoClient mongoClient = MongoClients.create(Config.CONNECTION_STRING)) {
+            MongoDatabase database = mongoClient.getDatabase(Config.DATABASE_NAME);
+            MongoCollection<Document> collection = database.getCollection(Config.MEDIA_COLLECTION_NAME);
+            Document query = new Document("_id", mediaID);
+            FindIterable<Document> result = collection.find(query);
+            return result.iterator().hasNext();
+        }
+    }
+
+    //GridFS Helper method to save a file in collection.
+    private static ObjectId saveFileToGridFS(GridFSBucket gridFSBucket, File file, String fileName, String contentType) throws IOException {
+        try (FileInputStream fileInputStream = new FileInputStream(file)) {
+            GridFSUploadStream uploadStream = gridFSBucket.openUploadStream(fileName, new GridFSUploadOptions().metadata(new Document("contentType", contentType)));
+            byte[] buffer = new byte[1024];
+            int bytesRead;
+            while ((bytesRead = fileInputStream.read(buffer)) != -1) {
+                uploadStream.write(buffer, 0, bytesRead);
+            }
+            uploadStream.close();
+            return uploadStream.getObjectId();
         }
     }
 

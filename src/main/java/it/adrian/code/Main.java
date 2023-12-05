@@ -27,7 +27,7 @@ public final class Main {
                 headers.set("Access-Control-Allow-Origin", Config.CORS_ORIGIN_PROTECTION);
                 headers.set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
                 headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization, User-Agent");
-                exchange.sendResponseHeaders(200, -1); // 200 OK senza corpo per OPTIONS
+                exchange.sendResponseHeaders(200, -1);
             }
         });
         System.out.println("«Aphrodite» init auth request..");
