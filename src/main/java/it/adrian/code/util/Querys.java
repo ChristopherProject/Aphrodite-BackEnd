@@ -68,10 +68,9 @@ public class Querys {
                 String header = "{\"certificate\":\"Aphrodite\",\"type\":\"JWT\", \"version\": \"1.0\"}";
                 String data = "{\"state\": \"success\", \"username\": \"" + username + "\", \"hash_password\": \"" + storedHashPassword + "\"}";
                 String jwt = Base64.getEncoder().encodeToString(data.getBytes());
-                String jsonOut = "{\"session\":\"" + jwt + "\"," + "\"renewal\": " + renewal + "," + "\"serial\": " + findUserByUsername(username).get("user_id") + "," + "\"expiration\": "+ expiration +"}";
-                String jsonSigned = "{\"accessToken\": \"" + Base64.getEncoder().encodeToString(jsonOut.getBytes()) + "\", \"signature\": \"" +Base64.getEncoder().encodeToString(MathUtil.signateDocument(header)) + "\"}";
-                String document = "{\"authToken\": \"" + Base64.getEncoder().encodeToString(jsonSigned.getBytes()) + "\"}";
-                return document;
+                String session = "{\"session\":\"" + jwt + "\"," + "\"renewal\": " + renewal + "," + "\"serial\": " + findUserByUsername(username).get("user_id") + "," + "\"expiration\": "+ expiration +"}";
+                String jsonSigned = "{\"accessToken\": \"" + Base64.getEncoder().encodeToString(session.getBytes()) + "\", \"signature\": \"" +Base64.getEncoder().encodeToString(MathUtil.signateDocument(header)) + "\"}";
+                return "{\"authToken\": \"" + Base64.getEncoder().encodeToString(jsonSigned.getBytes()) + "\"}";
             } else {
                 return "{\"error\": \"401 Unauthorized\"}";
             }
