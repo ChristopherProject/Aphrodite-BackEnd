@@ -110,9 +110,6 @@ public class Querys {
                         Document userDocument = collection.find(Filters.eq("hash_password", json.getString("hash_password"))).first();
                         String storedUsername = Objects.requireNonNull(userDocument).getString("username");
                         return storedUsername != null;
-                    }else{
-                        System.out.println("now " + now + " , started " + renewal + ", expiration " + expiration);
-                        return false;
                     }
                 }
             }
