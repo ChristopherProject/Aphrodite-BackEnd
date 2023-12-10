@@ -64,7 +64,7 @@ public class Querys {
             String storedHashPassword = Objects.requireNonNull(userDocument).getString("hash_password");
             if (MathUtil.verifyPassword(password, storedHashPassword)) {
                 long renewal = MathUtil.secondsUnixTimeStamp();
-                long expiration = (renewal + 600000);
+                long expiration = (renewal + 300000);
                 String header = "{\"certificate\":\"Aphrodite\",\"type\":\"JWT\", \"version\": \"1.0\"}";
                 String data = "{\"state\": \"success\", \"username\": \"" + username + "\", \"hash_password\": \"" + storedHashPassword + "\"}";
                 String jwt = Base64.getEncoder().encodeToString(data.getBytes());
@@ -95,18 +95,25 @@ public class Querys {
             JSONObject jsonObject = new JSONObject(decodedJwt);
             String signature = jsonObject.getString("signature");
             if(MathUtil.checkSignature(secretHeaders, Base64.getDecoder().decode(signature.getBytes()))) {
-                long now = MathUtil.secondsUnixTimeStamp();
                 byte[] decoderJsonSigned = Base64.getDecoder().decode(jsonObject.getString("accessToken").getBytes(StandardCharsets.UTF_8));
                 String jsonSignedDecoded = new String(decoderJsonSigned, StandardCharsets.UTF_8);
                 JSONObject sessionDataJson = new JSONObject(jsonSignedDecoded);
-                if (now >= sessionDataJson.getLong("renewal") && now <= sessionDataJson.getLong("expiration")) {
-                    String realJWT = sessionDataJson.getString("session");
-                    byte[] decoderJwtJson = Base64.getDecoder().decode(realJWT.getBytes(StandardCharsets.UTF_8));
-                    String jwtJsonDecoded = new String(decoderJwtJson, StandardCharsets.UTF_8);
-                    JSONObject json = new JSONObject(jwtJsonDecoded);
-                    Document userDocument = collection.find(Filters.eq("hash_password", json.getString("hash_password"))).first();
-                    String storedUsername = Objects.requireNonNull(userDocument).getString("username");
-                    return storedUsername != null;
+                if (sessionDataJson.has("renewal") && sessionDataJson.has("expiration")) {
+                    long now = MathUtil.secondsUnixTimeStamp();
+                    long renewal = sessionDataJson.getLong("renewal");
+                    long expiration = sessionDataJson.getLong("expiration");
+                    if ((now > renewal && now < expiration)) {
+                        String realJWT = sessionDataJson.getString("session");
+                        byte[] decoderJwtJson = Base64.getDecoder().decode(realJWT.getBytes(StandardCharsets.UTF_8));
+                        String jwtJsonDecoded = new String(decoderJwtJson, StandardCharsets.UTF_8);
+                        JSONObject json = new JSONObject(jwtJsonDecoded);
+                        Document userDocument = collection.find(Filters.eq("hash_password", json.getString("hash_password"))).first();
+                        String storedUsername = Objects.requireNonNull(userDocument).getString("username");
+                        return storedUsername != null;
+                    }else{
+                        System.out.println("now " + now + " , started " + renewal + ", expiration " + expiration);
+                        return false;
+                    }
                 }
             }
             return false;

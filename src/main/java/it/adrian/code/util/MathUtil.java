@@ -11,6 +11,7 @@ import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Date;
@@ -47,9 +48,7 @@ public class MathUtil {
     }
 
     public static long secondsUnixTimeStamp() {
-        LocalDateTime dateTime = LocalDateTime.of(2023, 1, 1, 0, 0, 0); // Anno, mese, giorno, ore, minuti, secondi
-        long timestampSeconds = dateTime.toEpochSecond(ZoneOffset.UTC);
-        return timestampSeconds;
+        return Instant.now().getEpochSecond();
     }
 
     public static boolean verifyPassword(String enteredPassword, String storedHashPassword) {
