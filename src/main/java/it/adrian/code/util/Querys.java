@@ -63,9 +63,15 @@ public class Querys {
             Document userDocument = collection.find(Filters.eq("username", username)).first();
             String storedHashPassword = Objects.requireNonNull(userDocument).getString("hash_password");
             if (MathUtil.verifyPassword(password, storedHashPassword)) {
+                long renewal = MathUtil.secondsUnixTimeStamp();
+                long expiration = (renewal + 600000);
+                String header = "{\"certificate\":\"Aphrodite\",\"type\":\"JWT\", \"version\": \"1.0\"}";
                 String data = "{\"state\": \"success\", \"username\": \"" + username + "\", \"hash_password\": \"" + storedHashPassword + "\"}";
                 String jwt = Base64.getEncoder().encodeToString(data.getBytes());
-                return "{\"token\": \"" + jwt + "\"}";
+                String jsonOut = "{\"session\":\"" + jwt + "\"," + "\"renewal\": " + renewal + "," + "\"serial\": " + findUserByUsername(username).get("user_id") + "," + "\"expiration\": "+ expiration +"}";
+                String jsonSigned = "{\"accessToken\": \"" + Base64.getEncoder().encodeToString(jsonOut.getBytes()) + "\", \"signature\": \"" +Base64.getEncoder().encodeToString(MathUtil.signateDocument(header)) + "\"}";
+                String document = "{\"authToken\": \"" + Base64.getEncoder().encodeToString(jsonSigned.getBytes()) + "\"}";
+                return document;
             } else {
                 return "{\"error\": \"401 Unauthorized\"}";
             }
@@ -83,16 +89,27 @@ public class Querys {
         try (MongoClient mongoClient = MongoClients.create(Config.CONNECTION_STRING)) {
             MongoDatabase database = mongoClient.getDatabase(Config.DATABASE_NAME);
             MongoCollection<Document> collection = database.getCollection(Config.USER_COLLECTION_NAME);
-
+            String secretHeaders = "{\"certificate\":\"Aphrodite\",\"type\":\"JWT\", \"version\": \"1.0\"}";
             byte[] decodedBytes = Base64.getDecoder().decode(jwt.getBytes(StandardCharsets.UTF_8));
             String decodedJwt = new String(decodedBytes, StandardCharsets.UTF_8);
-
             JSONObject jsonObject = new JSONObject(decodedJwt);
-
-            Document userDocument = collection.find(Filters.eq("hash_password", jsonObject.getString("hash_password"))).first();
-            String storedUsername = Objects.requireNonNull(userDocument).getString("username");
-
-            return storedUsername != null;
+            String signature = jsonObject.getString("signature");
+            if(MathUtil.checkSignature(secretHeaders, Base64.getDecoder().decode(signature.getBytes()))) {
+                long now = MathUtil.secondsUnixTimeStamp();
+                byte[] decoderJsonSigned = Base64.getDecoder().decode(jsonObject.getString("accessToken").getBytes(StandardCharsets.UTF_8));
+                String jsonSignedDecoded = new String(decoderJsonSigned, StandardCharsets.UTF_8);
+                JSONObject sessionDataJson = new JSONObject(jsonSignedDecoded);
+                if (now >= sessionDataJson.getLong("renewal") && now <= sessionDataJson.getLong("expiration")) {
+                    String realJWT = sessionDataJson.getString("session");
+                    byte[] decoderJwtJson = Base64.getDecoder().decode(realJWT.getBytes(StandardCharsets.UTF_8));
+                    String jwtJsonDecoded = new String(decoderJwtJson, StandardCharsets.UTF_8);
+                    JSONObject json = new JSONObject(jwtJsonDecoded);
+                    Document userDocument = collection.find(Filters.eq("hash_password", json.getString("hash_password"))).first();
+                    String storedUsername = Objects.requireNonNull(userDocument).getString("username");
+                    return storedUsername != null;
+                }
+            }
+            return false;
         } catch (Exception e) {
             return false;
         }
