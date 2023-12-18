@@ -40,7 +40,7 @@ public class HandlerChangePassword implements HttpHandler {
             String decodedJwt = new String(decodedBytes, StandardCharsets.UTF_8);
             JSONObject jsonObject = new JSONObject(decodedJwt);
             String currentUsername = jsonObject.getString("username");
-            String currentHashPassword = MathUtil.encrypt(queryParams.get("current_password"));
+            String currentHashPassword = MathUtil.encryptPassword(queryParams.get("current_password"));
             if (currentUsername != null) {
                 if (MathUtil.verifyPassword(queryParams.get("current_password"), currentHashPassword)) {
                     Querys.changePassword(currentUsername, queryParams.get("current_password"), queryParams.get("new_password"));

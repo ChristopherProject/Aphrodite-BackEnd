@@ -54,7 +54,7 @@ public class HandlerRegistration implements HttpHandler {
                     }
                     return;
                 }
-                String tmp = MathUtil.encrypt(jsonObject.getString("password"));
+                String tmp = MathUtil.encryptPassword(jsonObject.getString("password"));
                 String data = "{\"state\": \"success\", \"username\": \"" + jsonObject.getString("username") + "\", \"hash_password\": \"" + tmp + "\"}";
                 responseJson = success ? data : "{\"state\": \"failed\", \"error\": \"this username is already taken\"}";
             } else {

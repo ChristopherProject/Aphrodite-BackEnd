@@ -4,20 +4,19 @@ import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import org.bson.Document;
 
-import javax.crypto.Mac;
+import javax.crypto.Cipher;
+import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
-import java.security.InvalidKeyException;
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
+import java.util.Base64;
 import java.util.Date;
 import java.util.Random;
 
 public class MathUtil {
+
 
     public static String generateRandomId() {
         Random random = new Random();
@@ -31,7 +30,7 @@ public class MathUtil {
         return result.iterator().hasNext();
     }
 
-    public static String encrypt(final String base) {
+    public static String encryptPassword(final String base) {
         try {
             final MessageDigest digest = MessageDigest.getInstance("SHA-256");
             final byte[] hash = digest.digest(base.getBytes(StandardCharsets.UTF_8));
@@ -52,7 +51,7 @@ public class MathUtil {
     }
 
     public static boolean verifyPassword(String enteredPassword, String storedHashPassword) {
-        String enteredPasswordHash = encrypt(enteredPassword);
+        String enteredPasswordHash = encryptPassword(enteredPassword);
         return enteredPasswordHash.equals(storedHashPassword);
     }
 
@@ -65,23 +64,7 @@ public class MathUtil {
         return formattedTime;
     }
 
-
-    private static final String HMAC_ALGORITHM = "HmacSHA256";
-    private static final String secretKey = "HmacSHA256";
-
-    public static byte[] signateDocument(String input) {
-        try{
-            Mac hmac = Mac.getInstance(HMAC_ALGORITHM);
-            SecretKeySpec secretKeySpec = new SecretKeySpec(secretKey.getBytes(StandardCharsets.UTF_8), HMAC_ALGORITHM);
-            hmac.init(secretKeySpec);
-            return hmac.doFinal(input.getBytes(StandardCharsets.UTF_8));
-        }catch (Exception e){
-            return null;
-        }
-    }
-
-    public static boolean checkSignature(String input, byte[] signature)  {
-        byte[] calculatedSignature = signateDocument(input);
-        return MessageDigest.isEqual(calculatedSignature, signature);
+    public static boolean isTokenExpiredTime(long now, long renewal, long expiration) {
+        return now >= renewal && now <= expiration;
     }
 }
