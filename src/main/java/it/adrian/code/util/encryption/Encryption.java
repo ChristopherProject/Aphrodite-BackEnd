@@ -1,4 +1,4 @@
-package it.adrian.code.util;
+package it.adrian.code.util.encryption;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;

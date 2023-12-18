@@ -2,10 +2,7 @@ package it.adrian.code;
 
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpServer;
-import it.adrian.code.handler.chat.HandlerChatUpdate;
-import it.adrian.code.handler.chat.HandlerDeleteMessage;
-import it.adrian.code.handler.chat.HandlerEditMessage;
-import it.adrian.code.handler.chat.HandlerSendMessage;
+import it.adrian.code.handler.chat.*;
 import it.adrian.code.handler.profile.HandlerUpdateProfileBiography;
 import it.adrian.code.handler.profile.HandlerUpdateProfilePhoto;
 import it.adrian.code.handler.search.HandlerFindUserById;
@@ -13,7 +10,7 @@ import it.adrian.code.handler.auth.HandlerLogin;
 import it.adrian.code.handler.auth.HandlerRegistration;
 import it.adrian.code.handler.search.HandlerFindUserByName;
 import it.adrian.code.handler.user.HandlerChangePassword;
-import it.adrian.code.util.Config;
+import it.adrian.code.util.database.Config;
 
 import java.net.InetSocketAddress;
 
@@ -44,7 +41,7 @@ public final class Main {
         server.createContext("/api/editMessage", new HandlerEditMessage());//POST, http://localhost:419/api/editMessage?message_id=9824250, { "message_content": "messaggio cambiato!" }
         server.createContext("/api/deleteMessage", new HandlerDeleteMessage());//GET, http://localhost:419/api/deleteMessage?message_id=123123123
         server.createContext("/api/getUpdate", new HandlerChatUpdate());//GET, http://localhost:419/api/getUpdate?chat_id=6741019 (id del utente la cui chat con lui vuoi vedere, se metti il tuo non va ovviamente)
-       // server.createContext("/api/replyMessage", new HandlerReplyMessage());
+        server.createContext("/api/replyMessage", new HandlerReplyMessage());
         //TODO: replyMessage, sendPhotos, sendVideoFile, sendAudioFile (Acc x2)
         server.setExecutor(null);
         server.start();

@@ -1,4 +1,4 @@
-package it.adrian.code.util;
+package it.adrian.code.util.database;
 
 public class Config {
 

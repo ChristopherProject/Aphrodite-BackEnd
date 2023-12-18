@@ -3,9 +3,9 @@ package it.adrian.code.handler.chat;
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
-import it.adrian.code.util.Config;
-import it.adrian.code.util.MathUtil;
-import it.adrian.code.util.Querys;
+import it.adrian.code.util.database.Config;
+import it.adrian.code.util.math.MathUtil;
+import it.adrian.code.util.database.Querys;
 import org.json.JSONObject;
 
 import java.io.IOException;

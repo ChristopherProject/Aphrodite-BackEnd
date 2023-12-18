@@ -3,8 +3,8 @@ package it.adrian.code.handler.profile;
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
-import it.adrian.code.util.Config;
-import it.adrian.code.util.Querys;
+import it.adrian.code.util.database.Config;
+import it.adrian.code.util.database.Querys;
 import org.json.JSONObject;
 
 import java.io.IOException;

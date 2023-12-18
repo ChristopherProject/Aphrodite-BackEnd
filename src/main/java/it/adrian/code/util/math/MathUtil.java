@@ -1,4 +1,4 @@
-package it.adrian.code.util;
+package it.adrian.code.util.math;
 
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;

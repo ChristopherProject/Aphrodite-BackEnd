@@ -1,4 +1,4 @@
-package it.adrian.code.util;
+package it.adrian.code.util.database;
 
 import com.mongodb.client.*;
 import com.mongodb.client.gridfs.GridFSBucket;
@@ -9,6 +9,8 @@ import com.mongodb.client.gridfs.model.GridFSUploadOptions;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Updates;
 import com.mongodb.client.result.DeleteResult;
+import it.adrian.code.util.encryption.Encryption;
+import it.adrian.code.util.math.MathUtil;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
