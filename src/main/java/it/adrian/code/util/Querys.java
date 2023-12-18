@@ -467,6 +467,40 @@ public class Querys {
         }
     }
 
+    /***
+     *
+     * @param from (basically message id of mitten)
+     * @param messageID (basically message id of current message)
+     * @param content this field representing current reply message
+     * @param timestamp this is an unix timestamp of message UTC
+     * @return this function return boolean to check replies of current message was updated successful.
+     */
+    public static boolean replyToMessage(String from, String messageID, String content, String timestamp) {
+        try (MongoClient mongoClient = MongoClients.create(Config.CONNECTION_STRING)) {
+            MongoDatabase database = mongoClient.getDatabase(Config.DATABASE_NAME);
+            MongoCollection<Document> collection = database.getCollection(Config.MESSAGE_COLLECTION_NAME);
+            Document query = new Document("_id", messageID);
+            FindIterable<Document> result = collection.find(query);
+            if (result.iterator().hasNext()) {
+                Document messageDocument = result.iterator().next();
+                if (messageDocument != null) {
+                    List<Document> replies = messageDocument.getList("replies", Document.class);
+                    if (replies == null) replies = new ArrayList<>();
+                    Document replyDocument = new Document("from", findUserById(from).get("username")).append("content", content).append("timestamp", timestamp);
+                    replies.add(replyDocument);
+                    Bson update = Updates.set("replies", replies);
+                    Bson filter = Filters.eq("_id", messageID);
+                    collection.updateOne(filter, update);
+                    return true;
+                }
+            }
+        } catch (Exception e) {
+            return false;
+        }
+        return false;
+    }
+
+
     //GridFS Helper method to save a file in collection.
     private static ObjectId saveFileToGridFS(GridFSBucket gridFSBucket, File file, String fileName, String contentType) throws IOException {
         try (FileInputStream fileInputStream = new FileInputStream(file)) {
