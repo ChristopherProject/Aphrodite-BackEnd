@@ -530,6 +530,31 @@ public class Querys {
         return null;
     }
 
+    /***
+     *
+     * @param messageID (basically message id of current message)
+     * @return this function return all replies for message.
+     */
+    public static List<Document> getRepliesByMessageID(String messageID) {
+        try (MongoClient mongoClient = MongoClients.create(Config.CONNECTION_STRING)) {
+            MongoDatabase database = mongoClient.getDatabase(Config.DATABASE_NAME);
+            MongoCollection<Document> collection = database.getCollection(Config.MESSAGE_COLLECTION_NAME);
+            Document query = new Document("_id", messageID);
+            FindIterable<Document> result = collection.find(query);
+            if (result.iterator().hasNext()) {
+                Document messageDocument = result.iterator().next();
+                if (messageDocument != null) {
+                    List<Document> replies = messageDocument.getList("replies", Document.class);
+                    if (replies != null) {
+                        return replies;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            return null;
+        }
+        return null;
+    }
 
     //GridFS Helper method to save a file in collection.
     private static ObjectId saveFileToGridFS(GridFSBucket gridFSBucket, File file, String fileName, String contentType) throws IOException {

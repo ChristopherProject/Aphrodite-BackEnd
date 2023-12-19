@@ -7,6 +7,7 @@ import it.adrian.code.util.database.Config;
 import it.adrian.code.util.database.Querys;
 import it.adrian.code.util.encryption.Encryption;
 import it.adrian.code.util.math.MathUtil;
+import org.bson.Document;
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -52,7 +53,12 @@ public class HandlerReplyMessage implements HttpHandler {
             String yourChatID = Querys.findUserByUsername(currentUsername).get("user_id");
             if (yourChatID != null || !yourChatID.equals("")) {
                 boolean isOk = Querys.replyToMessage(yourChatID, queryParams.get("message_id"), queryParams.get("content").replace("%20", " "), MathUtil.getUnixTimestampEpoch());
-                responseJson = "{ \"replies\": " + isOk + " }";
+                if (isOk) {
+                    java.util.List<Document> replies = Querys.getRepliesByMessageID(queryParams.get("message_id"));
+                    responseJson = "{ " + "\"state\": \"success\", \"reply_id\": \"" + replies.get(replies.toArray().length - 1).get("reply_id") + "\", \"reply_content\": \"" + queryParams.get("content").replace("%20", " ") + "\" }";
+                } else {
+                    responseJson = "{\"state\": \"failed\", \"error\": \"invalid request, check your parameters\"}";
+                }
             }
         } else {
             responseJson = "{\"error\": \"invalid chat_id isn't define in request\"}";
