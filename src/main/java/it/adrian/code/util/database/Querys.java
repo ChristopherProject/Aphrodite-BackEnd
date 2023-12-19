@@ -328,8 +328,8 @@ public class Querys {
      * @param chatID this data represent other account user_id (unique data)
      * @return this function returned correspondence between two users.
      */
-    public static List<HashMap<String, String>> getMessagesBetweenUsers(String userID, String chatID) {
-        final List<HashMap<String, String>> messages = new ArrayList<>();
+    public static List<JSONObject> getMessagesBetweenUsers(String userID, String chatID) {
+        final List<JSONObject> messages = new ArrayList<>();
         try (MongoClient mongoClient = MongoClients.create(Config.CONNECTION_STRING)) {
             MongoDatabase database = mongoClient.getDatabase(Config.DATABASE_NAME);
             MongoCollection<Document> collection = database.getCollection(Config.MESSAGE_COLLECTION_NAME);
@@ -339,19 +339,14 @@ public class Querys {
             FindIterable<Document> result2 = collection.find(queryReceivedMessage);
             List<Document> allResults = Stream.concat(StreamSupport.stream(result1.spliterator(), false), StreamSupport.stream(result2.spliterator(), false)).collect(Collectors.toList());
             for (Document userDocument : allResults) {
-                HashMap<String, String> userInformation = new LinkedHashMap<>();
-                userInformation.put("_id", userDocument.getString("_id"));
-                userInformation.put("from", userDocument.getString("from"));
-                userInformation.put("to", userDocument.getString("to"));
-                userInformation.put("message", userDocument.getString("message"));
-                userInformation.put("timestamp", userDocument.getString("timestamp"));
-                messages.add(userInformation);
+                messages.add(new JSONObject(userDocument.toJson()));
             }
         } catch (Exception e) {
             return null;
         }
         return messages;
     }
+
 
     /***
      *
@@ -488,7 +483,13 @@ public class Querys {
                 if (messageDocument != null) {
                     List<Document> replies = messageDocument.getList("replies", Document.class);
                     if (replies == null) replies = new ArrayList<>();
-                    Document replyDocument = new Document("from", findUserById(from).get("username")).append("content", content).append("timestamp", timestamp);
+                    String replyId = MathUtil.generateRandomId();
+                    Document replyDocument = new Document("reply_id", replyId).append("from", findUserById(from).get("id")).append("content", content).append("timestamp", timestamp);
+                    String finalReplyId = replyId;
+                    while (replies.stream().anyMatch(doc -> doc.getString("reply_id").equals(finalReplyId))) {
+                        replyId = MathUtil.generateRandomId();
+                        replyDocument.put("reply_id", replyId);
+                    }
                     replies.add(replyDocument);
                     Bson update = Updates.set("replies", replies);
                     Bson filter = Filters.eq("_id", messageID);
@@ -500,6 +501,33 @@ public class Querys {
             return false;
         }
         return false;
+    }
+
+    /***
+     *
+     * @param messageID (basically message id of current message)
+     * @param replyID this is a reply id of current message (every reply has a unique id)
+     * @return this function return reply content.
+     */
+    public static Document getReplyById(String messageID, String replyID) {
+        try (MongoClient mongoClient = MongoClients.create(Config.CONNECTION_STRING)) {
+            MongoDatabase database = mongoClient.getDatabase(Config.DATABASE_NAME);
+            MongoCollection<Document> collection = database.getCollection(Config.MESSAGE_COLLECTION_NAME);
+            Document query = new Document("_id", messageID);
+            FindIterable<Document> result = collection.find(query);
+            if (result.iterator().hasNext()) {
+                Document messageDocument = result.iterator().next();
+                if (messageDocument != null) {
+                    List<Document> replies = messageDocument.getList("replies", Document.class);
+                    if (replies != null) {
+                        return replies.stream().filter(reply -> reply.getString("reply_id").equals(replyID)).findFirst().orElse(null);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            return null;
+        }
+        return null;
     }
 
 

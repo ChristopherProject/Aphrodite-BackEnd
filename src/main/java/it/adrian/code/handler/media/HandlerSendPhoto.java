@@ -5,6 +5,7 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import it.adrian.code.util.database.Config;
 import it.adrian.code.util.database.Querys;
+import it.adrian.code.util.encryption.Encryption;
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -36,7 +37,15 @@ public class HandlerSendPhoto implements HttpHandler {
         if (query.contains("chat_id") && !(queryParams.get("chat_id") == null || queryParams.get("chat_id").equals(""))) {
             byte[] decodedBytes = Base64.getDecoder().decode(jwt.getBytes(StandardCharsets.UTF_8));
             String decodedJwt = new String(decodedBytes, StandardCharsets.UTF_8);
-            JSONObject jsonObject = new JSONObject(decodedJwt);
+
+            byte[] decoderJsonSigned = Base64.getDecoder().decode(new JSONObject(decodedJwt).getString("accessToken").getBytes(StandardCharsets.UTF_8));
+            String jsonSignedEncrypt = new String(decoderJsonSigned, StandardCharsets.UTF_8);
+            String jsonSignedDecoded = Encryption.readSignature(jsonSignedEncrypt);
+
+            String realJWT = new JSONObject(jsonSignedDecoded).getString("session");
+            byte[] decoderJwtJson = Base64.getDecoder().decode(realJWT.getBytes(StandardCharsets.UTF_8));
+            String jwtJsonDecoded = new String(decoderJwtJson, StandardCharsets.UTF_8);
+            JSONObject jsonObject = new JSONObject(jwtJsonDecoded);
             String currentUsername = jsonObject.getString("username");
             String id_from = Querys.findUserByUsername(currentUsername).get("user_id");
             //TODO: FINIRE IMPLEMENTAZIONE

@@ -5,6 +5,7 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import it.adrian.code.util.database.Config;
 import it.adrian.code.util.database.Querys;
+import it.adrian.code.util.encryption.Encryption;
 import it.adrian.code.util.math.MathUtil;
 import org.json.JSONObject;
 
@@ -32,15 +33,27 @@ public class HandlerReplyMessage implements HttpHandler {
         }
         String query = t.getRequestURI().getQuery();
         Map<String, String> queryParams = Querys.parseURLQuery(query);
-        String responseJson;
+        String responseJson = null;
         if (query.contains("message_id") && !(queryParams.get("message_id") == null || queryParams.get("message_id").equals("")) || query.contains("content") && !(queryParams.get("content") == null || queryParams.get("content").equals(""))) {
             byte[] decodedBytes = Base64.getDecoder().decode(jwt.getBytes(StandardCharsets.UTF_8));
             String decodedJwt = new String(decodedBytes, StandardCharsets.UTF_8);
-            JSONObject jsonObject = new JSONObject(decodedJwt);
+
+            byte[] decoderJsonSigned = Base64.getDecoder().decode(new JSONObject(decodedJwt).getString("accessToken").getBytes(StandardCharsets.UTF_8));
+            String jsonSignedEncrypt = new String(decoderJsonSigned, StandardCharsets.UTF_8);
+            String jsonSignedDecoded = Encryption.readSignature(jsonSignedEncrypt);
+
+            String realJWT = new JSONObject(jsonSignedDecoded).getString("session");
+            byte[] decoderJwtJson = Base64.getDecoder().decode(realJWT.getBytes(StandardCharsets.UTF_8));
+            String jwtJsonDecoded = new String(decoderJwtJson, StandardCharsets.UTF_8);
+            JSONObject jsonObject = new JSONObject(jwtJsonDecoded);
+
             String currentUsername = jsonObject.getString("username");
+            System.out.println(currentUsername);
             String yourChatID = Querys.findUserByUsername(currentUsername).get("user_id");
-            boolean isOk = Querys.replyToMessage(yourChatID, queryParams.get("message_id"), queryParams.get("content"), MathUtil.getUnixTimestampEpoch());
-            responseJson = "{ \"replies\": " + isOk + " }";
+            if (yourChatID != null || !yourChatID.equals("")) {
+                boolean isOk = Querys.replyToMessage(yourChatID, queryParams.get("message_id"), queryParams.get("content").replace("%20", " "), MathUtil.getUnixTimestampEpoch());
+                responseJson = "{ \"replies\": " + isOk + " }";
+            }
         } else {
             responseJson = "{\"error\": \"invalid chat_id isn't define in request\"}";
         }

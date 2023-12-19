@@ -5,6 +5,7 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import it.adrian.code.util.database.Config;
 import it.adrian.code.util.database.Querys;
+import it.adrian.code.util.encryption.Encryption;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -27,7 +28,6 @@ public class HandlerChatUpdate implements HttpHandler {
             headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization, User-Agent");
             t.sendResponseHeaders(200, -1); // 200 OK senza corpo per OPTIONS
         }
-
         String jwt = extractTokenFromHeader(t.getRequestHeaders().getFirst("Authorization"));
         if (jwt == null || !Querys.validateJWT(jwt)) {
             sendUnauthorizedResponse(t);
@@ -39,21 +39,17 @@ public class HandlerChatUpdate implements HttpHandler {
         if (query.contains("chat_id") && !(queryParams.get("chat_id") == null || queryParams.get("chat_id").equals(""))) {
             byte[] decodedBytes = Base64.getDecoder().decode(jwt.getBytes(StandardCharsets.UTF_8));
             String decodedJwt = new String(decodedBytes, StandardCharsets.UTF_8);
-            JSONObject jsonObject = new JSONObject(decodedJwt);
+            byte[] decoderJsonSigned = Base64.getDecoder().decode(new JSONObject(decodedJwt).getString("accessToken").getBytes(StandardCharsets.UTF_8));
+            String jsonSignedEncrypt = new String(decoderJsonSigned, StandardCharsets.UTF_8);
+            String jsonSignedDecoded = Encryption.readSignature(jsonSignedEncrypt);
+            String realJWT = new JSONObject(jsonSignedDecoded).getString("session");
+            byte[] decoderJwtJson = Base64.getDecoder().decode(realJWT.getBytes(StandardCharsets.UTF_8));
+            String jwtJsonDecoded = new String(decoderJwtJson, StandardCharsets.UTF_8);
+            JSONObject jsonObject = new JSONObject(jwtJsonDecoded);
             String currentUsername = jsonObject.getString("username");
             String yourChatID = Querys.findUserByUsername(currentUsername).get("user_id");
-            List<HashMap<String, String>> messages = Querys.getMessagesBetweenUsers(yourChatID, queryParams.get("chat_id"));
-            JSONArray jsonArray = new JSONArray();
-            for (HashMap<String, String> message : messages) {
-                JSONObject data = new JSONObject();
-                data.put("_id", message.get("_id"));
-                data.put("from", message.get("from"));
-                data.put("to", message.get("to"));
-                data.put("message", message.get("message"));
-                data.put("timestamp", message.get("timestamp"));
-                jsonArray.put(data);
-            }
-            responseJson = "{ \"messages\": " + jsonArray + " }";
+            List<JSONObject> messages = Querys.getMessagesBetweenUsers(yourChatID, queryParams.get("chat_id"));
+            responseJson = messages.toString();
         } else {
             responseJson = "{\"error\": \"invalid chat_id isn't define in request\"}";
         }

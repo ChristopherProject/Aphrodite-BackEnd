@@ -5,6 +5,7 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import it.adrian.code.util.database.Config;
 import it.adrian.code.util.database.Querys;
+import it.adrian.code.util.encryption.Encryption;
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -38,7 +39,15 @@ public class HandlerDeleteMessage implements HttpHandler {
         if (query.contains("message_id") && !(queryParams.get("message_id") == null || queryParams.get("message_id").equals(""))) {
             byte[] decodedBytes = Base64.getDecoder().decode(jwt.getBytes(StandardCharsets.UTF_8));
             String decodedJwt = new String(decodedBytes, StandardCharsets.UTF_8);
-            JSONObject json = new JSONObject(decodedJwt);
+
+            byte[] decoderJsonSigned = Base64.getDecoder().decode(new JSONObject(decodedJwt).getString("accessToken").getBytes(StandardCharsets.UTF_8));
+            String jsonSignedEncrypt = new String(decoderJsonSigned, StandardCharsets.UTF_8);
+            String jsonSignedDecoded = Encryption.readSignature(jsonSignedEncrypt);
+
+            String realJWT = new JSONObject(jsonSignedDecoded).getString("session");
+            byte[] decoderJwtJson = Base64.getDecoder().decode(realJWT.getBytes(StandardCharsets.UTF_8));
+            String jwtJsonDecoded = new String(decoderJwtJson, StandardCharsets.UTF_8);
+            JSONObject json = new JSONObject(jwtJsonDecoded);
             String currentUsername = json.getString("username");
             String userID = Querys.findUserByUsername(currentUsername).get("user_id");
 
