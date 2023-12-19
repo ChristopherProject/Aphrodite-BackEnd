@@ -42,7 +42,8 @@ public final class Main {
         server.createContext("/api/deleteMessage", new HandlerDeleteMessage());//GET, http://localhost:419/api/deleteMessage?message_id=123123123
         server.createContext("/api/getUpdate", new HandlerChatUpdate());//GET, http://localhost:419/api/getUpdate?chat_id=6741019 (id del utente la cui chat con lui vuoi vedere, se metti il tuo non va ovviamente)
         server.createContext("/api/replyMessage", new HandlerReplyMessage());//GET, http://localhost:419/api/replyMessage?message_id=8994247&content=ciaoo%20tutto%20bene%20tu?
-        //TODO: replyMessage, sendPhotos, sendVideoFile, sendAudioFile (Acc x2)
+        //TODO: rifare il getUpdate deve ritornare tutta la chat
+        //TODO: sendPhotos, sendVideoFile, sendAudioFile (Acc x2)
         server.setExecutor(null);
         server.start();
         System.out.println("«Aphrodite» server init done. the service started on port 419");

@@ -46,15 +46,13 @@ public class HandlerReplyMessage implements HttpHandler {
             byte[] decoderJwtJson = Base64.getDecoder().decode(realJWT.getBytes(StandardCharsets.UTF_8));
             String jwtJsonDecoded = new String(decoderJwtJson, StandardCharsets.UTF_8);
             JSONObject jsonObject = new JSONObject(jwtJsonDecoded);
-
             String currentUsername = jsonObject.getString("username");
-            System.out.println(currentUsername);
             String yourChatID = Querys.findUserByUsername(currentUsername).get("user_id");
             if (yourChatID != null || !yourChatID.equals("")) {
                 boolean isOk = Querys.replyToMessage(yourChatID, queryParams.get("message_id"), queryParams.get("content").replace("%20", " "), MathUtil.getUnixTimestampEpoch());
-                if(isOk){
-                    responseJson = "{ \"replies\": " + "\"state\": \"success\", \"reply_id\": \"" + new JSONObject(Querys.getRepliesByMessageID(queryParams.get("message_id")).get(Querys.getRepliesByMessageID(queryParams.get("message_id")).size()).toJson()).getString("reply_id") + "\", \"content\": \""+queryParams.get("content").replace("%20", " ")+"\" }";
-                }else{
+                if (isOk) {//TODO: fix reply_id
+                    responseJson = "{ " + "\"state\": \"success\", \"reply_id\": \"" + "test" + "\", \"reply_content\": \"" + queryParams.get("content").replace("%20", " ") + "\" }";
+                } else {
                     responseJson = "{\"state\": \"failed\", \"error\": \"invalid request, check your parameters\"}";
                 }
             }

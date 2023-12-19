@@ -329,7 +329,7 @@ public class Querys {
      * @return this function returned correspondence between two users.
      */
     public static List<JSONObject> getMessagesBetweenUsers(String userID, String chatID) {
-        final List<JSONObject> messages = new ArrayList<>();
+        final List<JSONObject> messages;
         try (MongoClient mongoClient = MongoClients.create(Config.CONNECTION_STRING)) {
             MongoDatabase database = mongoClient.getDatabase(Config.DATABASE_NAME);
             MongoCollection<Document> collection = database.getCollection(Config.MESSAGE_COLLECTION_NAME);
@@ -338,9 +338,7 @@ public class Querys {
             Document queryReceivedMessage = new Document("from", chatID).append("to", userID);
             FindIterable<Document> result2 = collection.find(queryReceivedMessage);
             List<Document> allResults = Stream.concat(StreamSupport.stream(result1.spliterator(), false), StreamSupport.stream(result2.spliterator(), false)).collect(Collectors.toList());
-            for (Document userDocument : allResults) {
-                messages.add(new JSONObject(userDocument.toJson()));
-            }
+            messages = allResults.stream().map(userDocument -> new JSONObject(userDocument.toJson())).collect(Collectors.toList());
         } catch (Exception e) {
             return null;
         }
@@ -484,7 +482,7 @@ public class Querys {
                     List<Document> replies = messageDocument.getList("replies", Document.class);
                     if (replies == null) replies = new ArrayList<>();
                     String replyId = MathUtil.generateRandomId();
-                    Document replyDocument = new Document("reply_id", replyId).append("from", findUserById(from).get("id")).append("content", content).append("timestamp", timestamp);
+                    Document replyDocument = new Document("reply_id", replyId).append("from", from).append("content", content).append("timestamp", timestamp);
                     String finalReplyId = replyId;
                     while (replies.stream().anyMatch(doc -> doc.getString("reply_id").equals(finalReplyId))) {
                         replyId = MathUtil.generateRandomId();

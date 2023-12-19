@@ -49,7 +49,8 @@ public class HandlerChatUpdate implements HttpHandler {
             String currentUsername = jsonObject.getString("username");
             String yourChatID = Querys.findUserByUsername(currentUsername).get("user_id");
             List<JSONObject> messages = Querys.getMessagesBetweenUsers(yourChatID, queryParams.get("chat_id"));
-            responseJson = messages.toString();
+            System.out.println(messages.size());
+            responseJson = messages.toString(); //TODO: fix duplicates
         } else {
             responseJson = "{\"error\": \"invalid chat_id isn't define in request\"}";
         }
