@@ -10,6 +10,7 @@ import it.adrian.code.handler.auth.HandlerLogin;
 import it.adrian.code.handler.auth.HandlerRegistration;
 import it.adrian.code.handler.search.HandlerFindUserByName;
 import it.adrian.code.handler.user.HandlerChangePassword;
+import it.adrian.code.handler.user.HandlerGetMyUserInformation;
 import it.adrian.code.util.database.Config;
 
 import java.net.InetSocketAddress;
@@ -31,6 +32,7 @@ public final class Main {
         server.createContext("/api/login", new HandlerLogin());//POST, http://localhost:419/api/login, { "username": "Adrian", "password": "JAC4192" }
         server.createContext("/api/register", new HandlerRegistration());//POST, http://localhost:419/api/register, { "username": "Adrian", "password": "JAC4192" }
         System.out.println("«Aphrodite» init user request..");
+        server.createContext("/api/getMyID", new HandlerGetMyUserInformation());//GET
         server.createContext("/api/getUserById", new HandlerFindUserById());//GET, http://localhost:419/api/getUserById?user_id=5288764
         server.createContext("/api/getUserByName", new HandlerFindUserByName());//GET, http://localhost:419/api/getUserByName?username=Adrian
         server.createContext("/api/changePassword", new HandlerChangePassword());//GET, http://localhost:419/api/changePassword?current_password=JAC419&new_password=JAC4192
@@ -42,7 +44,8 @@ public final class Main {
         server.createContext("/api/deleteMessage", new HandlerDeleteMessage());//GET, http://localhost:419/api/deleteMessage?message_id=123123123
         server.createContext("/api/getUpdate", new HandlerChatUpdate());//GET, http://localhost:419/api/getUpdate?chat_id=6741019 (id del utente la cui chat con lui vuoi vedere, se metti il tuo non va ovviamente)
         server.createContext("/api/replyMessage", new HandlerReplyMessage());//GET, http://localhost:419/api/replyMessage?message_id=8994247&content=ciaoo%20tutto%20bene%20tu?
-        //TODO: replyMessage, sendPhotos, sendVideoFile, sendAudioFile (Acc x2)
+        //TODO: rifare il getUpdate deve ritornare tutta la chat
+        //TODO: sendPhotos, sendVideoFile, sendAudioFile (Acc x2)
         server.setExecutor(null);
         server.start();
         System.out.println("«Aphrodite» server init done. the service started on port 419");

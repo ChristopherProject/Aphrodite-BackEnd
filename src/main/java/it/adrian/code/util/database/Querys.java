@@ -333,11 +333,16 @@ public class Querys {
         try (MongoClient mongoClient = MongoClients.create(Config.CONNECTION_STRING)) {
             MongoDatabase database = mongoClient.getDatabase(Config.DATABASE_NAME);
             MongoCollection<Document> collection = database.getCollection(Config.MESSAGE_COLLECTION_NAME);
-            Document querySentMessage = new Document("from", userID).append("to", chatID);
-            FindIterable<Document> result1 = collection.find(querySentMessage);
-            Document queryReceivedMessage = new Document("from", chatID).append("to", userID);
-            FindIterable<Document> result2 = collection.find(queryReceivedMessage);
-            List<Document> allResults = Stream.concat(StreamSupport.stream(result1.spliterator(), false), StreamSupport.stream(result2.spliterator(), false)).collect(Collectors.toList());
+            Document query = new Document("$or",
+                    Arrays.asList(
+                            new Document("from", userID).append("to", chatID),
+                            new Document("from", chatID).append("to", userID),
+                            new Document("from", userID).append("to", userID),
+                            new Document("from", chatID).append("to", chatID)
+                    )
+            );
+            FindIterable<Document> result = collection.find(query);
+            List<Document> allResults = StreamSupport.stream(result.spliterator(), false).collect(Collectors.toList());
             for (Document userDocument : allResults) {
                 messages.add(new JSONObject(userDocument.toJson()));
             }
@@ -346,7 +351,6 @@ public class Querys {
         }
         return messages;
     }
-
 
     /***
      *

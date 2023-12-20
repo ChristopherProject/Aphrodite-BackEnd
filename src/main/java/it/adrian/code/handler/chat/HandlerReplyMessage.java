@@ -49,7 +49,7 @@ public class HandlerReplyMessage implements HttpHandler {
             JSONObject jsonObject = new JSONObject(jwtJsonDecoded);
 
             String currentUsername = jsonObject.getString("username");
-            System.out.println(currentUsername);
+
             String yourChatID = Querys.findUserByUsername(currentUsername).get("user_id");
             if (yourChatID != null || !yourChatID.equals("")) {
                 boolean isOk = Querys.replyToMessage(yourChatID, queryParams.get("message_id"), queryParams.get("content").replace("%20", " "), MathUtil.getUnixTimestampEpoch());
