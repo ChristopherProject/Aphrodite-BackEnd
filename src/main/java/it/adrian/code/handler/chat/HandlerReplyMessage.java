@@ -47,7 +47,9 @@ public class HandlerReplyMessage implements HttpHandler {
             byte[] decoderJwtJson = Base64.getDecoder().decode(realJWT.getBytes(StandardCharsets.UTF_8));
             String jwtJsonDecoded = new String(decoderJwtJson, StandardCharsets.UTF_8);
             JSONObject jsonObject = new JSONObject(jwtJsonDecoded);
+
             String currentUsername = jsonObject.getString("username");
+
             String yourChatID = Querys.findUserByUsername(currentUsername).get("user_id");
             if (yourChatID != null || !yourChatID.equals("")) {
                 boolean isOk = Querys.replyToMessage(yourChatID, queryParams.get("message_id"), queryParams.get("content").replace("%20", " "), MathUtil.getUnixTimestampEpoch());

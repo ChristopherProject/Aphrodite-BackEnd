@@ -10,6 +10,7 @@ import it.adrian.code.handler.auth.HandlerLogin;
 import it.adrian.code.handler.auth.HandlerRegistration;
 import it.adrian.code.handler.search.HandlerFindUserByName;
 import it.adrian.code.handler.user.HandlerChangePassword;
+import it.adrian.code.handler.user.HandlerGetMyUserInformation;
 import it.adrian.code.util.database.Config;
 
 import java.net.InetSocketAddress;
@@ -31,6 +32,7 @@ public final class Main {
         server.createContext("/api/login", new HandlerLogin());//POST, http://localhost:419/api/login, { "username": "Adrian", "password": "JAC4192" }
         server.createContext("/api/register", new HandlerRegistration());//POST, http://localhost:419/api/register, { "username": "Adrian", "password": "JAC4192" }
         System.out.println("«Aphrodite» init user request..");
+        server.createContext("/api/getMyID", new HandlerGetMyUserInformation());//GET
         server.createContext("/api/getUserById", new HandlerFindUserById());//GET, http://localhost:419/api/getUserById?user_id=5288764
         server.createContext("/api/getUserByName", new HandlerFindUserByName());//GET, http://localhost:419/api/getUserByName?username=Adrian
         server.createContext("/api/changePassword", new HandlerChangePassword());//GET, http://localhost:419/api/changePassword?current_password=JAC419&new_password=JAC4192
