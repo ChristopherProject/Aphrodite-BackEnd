@@ -16,6 +16,10 @@ import java.net.InetSocketAddress;
 
 public final class Main {
 
+    //TODO: REMOVE THIS MESSAGE IS ANNOYING..
+    //dic 22, 2023 12:55:56 PM com.mongodb.internal.diagnostics.logging.Loggers shouldUseSLF4J
+    //AVVERTENZA: SLF4J not found on the classpath.  Logging is disabled for the 'org.mongodb.driver' component
+
     public static void main(String... args) throws Exception {
         final HttpServer server = HttpServer.create(new InetSocketAddress(419), 0);
         server.createContext("/", Requests::corsSettings);
