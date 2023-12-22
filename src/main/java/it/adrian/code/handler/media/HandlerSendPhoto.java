@@ -51,7 +51,7 @@ public class HandlerSendPhoto implements HttpHandler {
             //TODO: FINIRE IMPLEMENTAZIONE
             //Querys.uploadMedia(id_from, ) ;
 
-            responseJson = "{ \"messages\": "  + " }";
+            responseJson = "{ \"messages\": " + " }";
         } else {
             responseJson = "{\"error\": \"invalid chat_id isn't define in request\"}";
         }
