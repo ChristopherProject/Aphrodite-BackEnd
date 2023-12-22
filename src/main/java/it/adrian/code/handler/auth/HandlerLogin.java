@@ -24,13 +24,7 @@ public class HandlerLogin implements HttpHandler {
             while ((b = is.read()) != -1) requestBodyBuilder.append((char) b);
             String requestBody = requestBodyBuilder.toString();
             if (requestBody.isEmpty()) {
-                Headers headers = t.getResponseHeaders();
-                headers.set("User-Agent", Config.CUSTOM_USER_AGENT);
-                headers.set("Content-Type", "application/json");
-                t.sendResponseHeaders(404, 0);
-                try (OutputStream os = t.getResponseBody()) {
-                    os.write("{\"error\": \"invalid request body is empty\"}".getBytes());
-                }
+                Requests.sendUnauthorizedResponse(t, "invalid request body is empty");
                 return;
             }
             JSONObject jsonObject = new JSONObject(requestBody);
