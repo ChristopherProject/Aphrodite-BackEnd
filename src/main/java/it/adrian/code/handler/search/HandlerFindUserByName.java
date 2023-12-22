@@ -5,6 +5,7 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import it.adrian.code.util.database.Config;
 import it.adrian.code.util.database.Querys;
+import it.adrian.code.util.web.Requests;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -14,17 +15,10 @@ public class HandlerFindUserByName implements HttpHandler {
 
     @Override
     public void handle(HttpExchange t) throws IOException {
-        if (t.getRequestMethod().equalsIgnoreCase("OPTIONS")) {
-            Headers headers = t.getResponseHeaders();
-            headers.set("Access-Control-Allow-Origin", Config.CORS_ORIGIN_PROTECTION);
-            headers.set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-            headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization, User-Agent");
-            t.sendResponseHeaders(200, -1); // 200 OK senza corpo per OPTIONS
-        }
-
-        final String jwt = extractTokenFromHeader(t.getRequestHeaders().getFirst("Authorization"));
+        Requests.corsSettings(t);
+        final String jwt = Requests.extractTokenFromHeader(t.getRequestHeaders().getFirst("Authorization"));
         if (jwt == null || !Querys.validateJWT(jwt)) {
-            sendUnauthorizedResponse(t);
+            Requests.sendUnauthorizedResponse(t, "cant find user because jwt is expired or invalid.");
             return;
         }
         String query = t.getRequestURI().getQuery();
@@ -32,10 +26,7 @@ public class HandlerFindUserByName implements HttpHandler {
         String responseJson;
         if (query.contains("username") && !(queryParams.get("username") == null || queryParams.get("username").equals(""))) {
             if (Querys.findUserByUsername(queryParams.get("username")) != null) {
-                responseJson = "{\"user_id\": \"" + Querys.findUserByUsername(queryParams.get("username")).get("user_id")  + "\"," +
-                        " \"username\": \"" + Querys.findUserByUsername(queryParams.get("username")).get("username") +
-                        "\", \"biography\": \"" + Querys.findUserByUsername(queryParams.get("username")).get("biography") +
-                        "\",\"profile_pic\": \""+Querys.findUserByUsername(queryParams.get("username")).get("profile_pic")+"\" }";
+                responseJson = "{\"user_id\": \"" + Querys.findUserByUsername(queryParams.get("username")).get("user_id") + "\"," + " \"username\": \"" + Querys.findUserByUsername(queryParams.get("username")).get("username") + "\", \"biography\": \"" + Querys.findUserByUsername(queryParams.get("username")).get("biography") + "\",\"profile_pic\": \"" + Querys.findUserByUsername(queryParams.get("username")).get("profile_pic") + "\" }";
             } else {
                 responseJson = "{\"error\": \"user not found invalid username\"}";
             }
@@ -50,22 +41,5 @@ public class HandlerFindUserByName implements HttpHandler {
         OutputStream os = t.getResponseBody();
         os.write(responseJson.getBytes());
         os.close();
-    }
-
-    private void sendUnauthorizedResponse(HttpExchange t) throws IOException {
-        Headers headers = t.getResponseHeaders();
-        headers.set("User-Agent", Config.CUSTOM_USER_AGENT);
-        headers.set("Content-Type", "application/json");
-        t.sendResponseHeaders(401, 0);
-        try (OutputStream os = t.getResponseBody()) {
-            os.write("{\"error\": \"401 Unauthorized\"}".getBytes());
-        }
-    }
-
-    private String extractTokenFromHeader(String authorizationHeader) {
-        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            return authorizationHeader.substring(7);
-        }
-        return null;
     }
 }
