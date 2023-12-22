@@ -4,8 +4,9 @@ import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import it.adrian.code.util.database.Config;
-import it.adrian.code.util.math.MathUtil;
 import it.adrian.code.util.database.Querys;
+import it.adrian.code.util.math.MathUtil;
+import it.adrian.code.util.web.Requests;
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -16,14 +17,7 @@ public class HandlerRegistration implements HttpHandler {
 
     @Override
     public void handle(HttpExchange t) throws IOException {
-        if (t.getRequestMethod().equalsIgnoreCase("OPTIONS")) {
-            Headers headers = t.getResponseHeaders();
-            headers.set("Access-Control-Allow-Origin", Config.CORS_ORIGIN_PROTECTION);
-            headers.set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-            headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization, User-Agent");
-            t.sendResponseHeaders(200, -1); // 200 OK senza corpo per OPTIONS
-        }
-
+        Requests.corsSettings(t);
         if ("POST".equals(t.getRequestMethod())) {
             InputStream is = t.getRequestBody();
             StringBuilder requestBodyBuilder = new StringBuilder();
@@ -69,17 +63,7 @@ public class HandlerRegistration implements HttpHandler {
             os.write(responseJson.getBytes());
             os.close();
         } else {
-            sendUnauthorizedResponse(t);
-        }
-    }
-
-    private void sendUnauthorizedResponse(HttpExchange t) throws IOException {
-        Headers headers = t.getResponseHeaders();
-        headers.set("User-Agent", Config.CUSTOM_USER_AGENT);
-        headers.set("Content-Type", "application/json");
-        t.sendResponseHeaders(405, 0);
-        try (OutputStream os = t.getResponseBody()) {
-            os.write("{\"error\": \"405 Method Not Allowed\"}".getBytes());
+            Requests.sendUnauthorizedResponse(t, "405 Method Not Allowed");
         }
     }
 }

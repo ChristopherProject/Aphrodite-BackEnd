@@ -5,6 +5,7 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import it.adrian.code.util.database.Config;
 import it.adrian.code.util.database.Querys;
+import it.adrian.code.util.web.Requests;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -14,17 +15,10 @@ public class HandlerFindUserById implements HttpHandler {
 
     @Override
     public void handle(HttpExchange t) throws IOException {
-        if (t.getRequestMethod().equalsIgnoreCase("OPTIONS")) {
-            Headers headers = t.getResponseHeaders();
-            headers.set("Access-Control-Allow-Origin", Config.CORS_ORIGIN_PROTECTION);
-            headers.set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-            headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization, User-Agent");
-            t.sendResponseHeaders(200, -1); // 200 OK senza corpo per OPTIONS
-        }
-
-        final String jwt = extractTokenFromHeader(t.getRequestHeaders().getFirst("Authorization"));
+        Requests.corsSettings(t);
+        final String jwt = Requests.extractTokenFromHeader(t.getRequestHeaders().getFirst("Authorization"));
         if (jwt == null || !Querys.validateJWT(jwt)) {
-            sendUnauthorizedResponse(t);
+            Requests.sendUnauthorizedResponse(t, "cant find user because jwt is expired or invalid.");
             return;
         }
         String query = t.getRequestURI().getQuery();
@@ -32,10 +26,7 @@ public class HandlerFindUserById implements HttpHandler {
         String responseJson;
         if (query.contains("user_id") && !(queryParams.get("user_id") == null || queryParams.get("user_id").equals(""))) {
             if (Querys.findUserById(queryParams.get("user_id")) != null) {
-                responseJson = "{\"user_id\": \"" + Querys.findUserById(queryParams.get("user_id")).get("user_id")  + "\"," +
-                        " \"username\": \"" + Querys.findUserById(queryParams.get("user_id")).get("username") +
-                        "\", \"biography\": \"" + Querys.findUserById(queryParams.get("user_id")).get("biography") +
-                        "\",\"profile_pic\": \""+Querys.findUserById(queryParams.get("user_id")).get("profile_pic")+"\" }";
+                responseJson = "{\"user_id\": \"" + Querys.findUserById(queryParams.get("user_id")).get("user_id") + "\"," + " \"username\": \"" + Querys.findUserById(queryParams.get("user_id")).get("username") + "\", \"biography\": \"" + Querys.findUserById(queryParams.get("user_id")).get("biography") + "\",\"profile_pic\": \"" + Querys.findUserById(queryParams.get("user_id")).get("profile_pic") + "\" }";
             } else {
                 responseJson = "{\"error\": \"user not found invalid user_id\"}";
             }
@@ -50,21 +41,5 @@ public class HandlerFindUserById implements HttpHandler {
         OutputStream os = t.getResponseBody();
         os.write(responseJson.getBytes());
         os.close();
-    }
-
-    private void sendUnauthorizedResponse(HttpExchange t) throws IOException {
-        Headers headers = t.getResponseHeaders();
-        headers.set("Content-Type", "application/json");
-        t.sendResponseHeaders(401, 0);
-        try (OutputStream os = t.getResponseBody()) {
-            os.write("{\"error\": \"401 Unauthorized\"}".getBytes());
-        }
-    }
-
-    private String extractTokenFromHeader(String authorizationHeader) {
-        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            return authorizationHeader.substring(7);
-        }
-        return null;
     }
 }
