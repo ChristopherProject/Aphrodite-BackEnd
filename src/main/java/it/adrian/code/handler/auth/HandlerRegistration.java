@@ -24,7 +24,7 @@ public class HandlerRegistration implements HttpHandler {
             int b;
             while ((b = is.read()) != -1) requestBodyBuilder.append((char) b);
             String requestBody = requestBodyBuilder.toString();
-            if(requestBody.isEmpty()){
+            if (requestBody.isEmpty()) {
                 Headers headers = t.getResponseHeaders();
                 headers.set("User-Agent", Config.CUSTOM_USER_AGENT);
                 headers.set("Content-Type", "application/json");
@@ -38,7 +38,7 @@ public class HandlerRegistration implements HttpHandler {
             String responseJson;
             if (requestBody.contains("username") && !(jsonObject.getString("username") == null || jsonObject.getString("username").equals("")) && requestBody.contains("password") && !(jsonObject.getString("password") == null || jsonObject.getString("password").equals(""))) {
                 boolean success = Querys.registerUser(jsonObject.getString("username"), jsonObject.getString("password"));
-                if(jsonObject.getString("password").length() <  8){
+                if (jsonObject.getString("password").length() < 8) {
                     Headers headers = t.getResponseHeaders();
                     headers.set("User-Agent", Config.CUSTOM_USER_AGENT);
                     headers.set("Content-Type", "application/json");

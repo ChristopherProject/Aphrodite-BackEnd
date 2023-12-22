@@ -23,7 +23,7 @@ public class HandlerLogin implements HttpHandler {
             int b;
             while ((b = is.read()) != -1) requestBodyBuilder.append((char) b);
             String requestBody = requestBodyBuilder.toString();
-            if(requestBody.isEmpty()){
+            if (requestBody.isEmpty()) {
                 Headers headers = t.getResponseHeaders();
                 headers.set("User-Agent", Config.CUSTOM_USER_AGENT);
                 headers.set("Content-Type", "application/json");
