@@ -18,7 +18,7 @@ public final class Main {
 
     public static void main(String... args) throws Exception {
         final HttpServer server = HttpServer.create(new InetSocketAddress(419), 0);
-        server.createContext("/", exchange -> Requests.corsSettings(exchange));
+        server.createContext("/", Requests::corsSettings);
         System.out.println("«Aphrodite» init auth request..");
         server.createContext("/api/login", new HandlerLogin());//POST, http://localhost:419/api/login, { "username": "Adrian", "password": "JAC419" }
         server.createContext("/api/register", new HandlerRegistration());//POST, http://localhost:419/api/register, { "username": "Adrian", "password": "JAC419" }
