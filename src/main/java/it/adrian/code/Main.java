@@ -18,6 +18,7 @@ import java.net.InetSocketAddress;
 public final class Main {
 
     static {
+        System.out.println("«Aphrodite» check and validate integrity..");
         if(!DynamicInstaller.checkMongoDB()){
             DynamicInstaller.install();
         }
