@@ -10,11 +10,18 @@ import it.adrian.code.handler.search.HandlerFindUserById;
 import it.adrian.code.handler.search.HandlerFindUserByName;
 import it.adrian.code.handler.user.HandlerChangePassword;
 import it.adrian.code.handler.user.HandlerGetMyUserInformation;
+import it.adrian.code.util.system.DynamicInstaller;
 import it.adrian.code.util.web.Requests;
 
 import java.net.InetSocketAddress;
 
 public final class Main {
+
+    static {
+        if(!DynamicInstaller.checkMongoDB()){
+            DynamicInstaller.install();
+        }
+    }
 
     public static void main(String... args) throws Exception {
         final HttpServer server = HttpServer.create(new InetSocketAddress(419), 0);
