@@ -7,9 +7,10 @@ import com.sun.net.httpserver.HttpHandler;
 import it.adrian.code.util.database.Config;
 import it.adrian.code.util.database.Querys;
 import it.adrian.code.util.encryption.Encryption;
+import it.adrian.code.util.json.JSON;
 import it.adrian.code.util.math.MathUtil;
 import it.adrian.code.util.web.Requests;
-import org.json.JSONObject;
+
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -39,8 +40,8 @@ public class HandlerSendMessage implements HttpHandler {
                 Requests.sendUnauthorizedResponse(t, "invalid request body is empty");
                 return;
             }
-            JSONObject jsonObject = new JSONObject(requestBody);
-            String message = jsonObject.getString("message");
+            JsonNode jsonObject = JSON.parseStringToJson(requestBody);
+            String message = jsonObject.get("message").asText();
             if (message != null && query.contains("chat_id") && !(queryParams.get("chat_id") == null || queryParams.get("chat_id").equals(""))) {
                 JsonNode session = Encryption.getSessionJSON(jwt);
                 String currentUsername = session.get("username").asText();
