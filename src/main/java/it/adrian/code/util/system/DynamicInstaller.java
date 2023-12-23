@@ -27,7 +27,7 @@ public class DynamicInstaller {
                 break;
             case windows:
                 System.out.println("downloading installer..");
-                downloadFile("https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-7.0.4-signed.msi", "mongodb-windows-x86_64-7.0.4-signed.msi", System.getenv("TEMP"));
+                downloadFile(System.getenv("TEMP"));
                 try {
                     Process process = Runtime.getRuntime().exec("msiexec /i " + System.getenv("TEMP") + File.separator + "mongodb-windows-x86_64-7.0.4-signed.msi");
                     int exitCode = process.waitFor();
@@ -55,8 +55,7 @@ public class DynamicInstaller {
                     }
                     int exitCode = process.waitFor();
                     input.close();
-                    boolean isInstalled = exitCode == 0;
-                    return isInstalled;
+                    return exitCode == 0;
                 } catch (IOException | InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -71,39 +70,12 @@ public class DynamicInstaller {
         return false;
     }
 
-    private static void downloadFile(String url, String fileName, String directory) {
-        Path savedPath = Path.of(directory, fileName);
-        try (InputStream in = new URL(url).openStream()) {
+    private static void downloadFile(String directory) {
+        Path savedPath = Path.of(directory, "mongodb-windows-x86_64-7.0.4-signed.msi");
+        try (InputStream in = new URL("https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-7.0.4-signed.msi").openStream()) {
             Files.copy(in, savedPath, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
-
- /*   private static void saveFile(String url, String fileName, String directory) {
-        final File savedPath = new File(directory + File.separator + fileName);
-        try {
-            URL LINK = new URL(url);
-            InputStream in;
-            ByteArrayOutputStream by_arr;
-            int max_data = 2024;
-            try {
-                in = LINK.openStream();
-                by_arr = new ByteArrayOutputStream(max_data);
-                int length = -1;
-                byte[] buffer = new byte[max_data];
-                while ((length = in.read(buffer)) > -1) {
-                    by_arr.write(buffer, 0, length);
-                }
-                by_arr.close();
-                in.close();
-                try (FileOutputStream fw = new FileOutputStream(savedPath.getAbsolutePath())) {
-                    fw.write(by_arr.toByteArray());
-                } catch (Exception ignored) {
-                }
-            } catch (IOException ignored) {
-            }
-        } catch (Exception ignored) {
-        }
-    }*/
 }
