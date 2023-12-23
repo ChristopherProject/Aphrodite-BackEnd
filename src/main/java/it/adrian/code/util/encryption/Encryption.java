@@ -86,6 +86,27 @@ public class Encryption {
         return new String(decrypted);
     }
 
+    public static String encryptPassword(final String base) {
+        try {
+            final MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            final byte[] hash = digest.digest(base.getBytes(StandardCharsets.UTF_8));
+            final StringBuilder hexString = new StringBuilder();
+            for (byte b : hash) {
+                final String hex = Integer.toHexString(0xff & b);
+                if (hex.length() == 1) hexString.append('0');
+                hexString.append(hex);
+            }
+            return hexString.toString();
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    public static boolean verifyPassword(String enteredPassword, String storedHashPassword) {
+        String enteredPasswordHash = encryptPassword(enteredPassword);
+        return enteredPasswordHash.equals(storedHashPassword);
+    }
+
     public static JsonNode getSessionJSON(String jwt) {
         byte[] decodedBytes = Base64.getDecoder().decode(jwt.getBytes(StandardCharsets.UTF_8));
         String decodedJwt = new String(decodedBytes, StandardCharsets.UTF_8);
