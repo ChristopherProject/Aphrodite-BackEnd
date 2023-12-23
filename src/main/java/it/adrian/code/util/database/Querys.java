@@ -39,11 +39,11 @@ public class Querys {
             String randomId;
             do {
                 randomId = MathUtil.generateRandomId();
-            } while (MathUtil.isIdAlreadyUsed(collection, randomId));
+            } while (MathUtil.isIdAlreadyUsedInCollection(collection, randomId));
             if (uniqueUserIDCheck(username)) {
                 return false;
             }
-            Document userDocument = new Document().append("_id", randomId).append("username", username).append("hash_password", MathUtil.encryptPassword(password));
+            Document userDocument = new Document().append("_id", randomId).append("username", username).append("hash_password", Encryption.encryptPassword(password));
             collection.insertOne(userDocument);
         }
         return true;
@@ -64,7 +64,7 @@ public class Querys {
             }
             Document userDocument = collection.find(Filters.eq("username", username)).first();
             String storedHashPassword = Objects.requireNonNull(userDocument).getString("hash_password");
-            if (MathUtil.verifyPassword(password, storedHashPassword)) {
+            if (Encryption.verifyPassword(password, storedHashPassword)) {
                 long renewal = MathUtil.secondsUnixTimeStamp();
                 long expiration = (renewal + 7000);
                 String header = "{\"certificate\":\"Aphrodite\",\"type\":\"JWT\", \"version\": \"1.0\"" + ",\"delivered\": " + renewal + "}";
@@ -142,10 +142,10 @@ public class Querys {
             }
             Document userDocument = collection.find(Filters.eq("username", username)).first();
             String storedHashPassword = Objects.requireNonNull(userDocument).getString("hash_password");
-            if (!MathUtil.verifyPassword(oldPassword, storedHashPassword)) {
+            if (!Encryption.verifyPassword(oldPassword, storedHashPassword)) {
                 return false;
             }
-            collection.updateOne(Filters.eq("username", username), new Document("$set", new Document("hash_password", MathUtil.encryptPassword(newPassword))));
+            collection.updateOne(Filters.eq("username", username), new Document("$set", new Document("hash_password", Encryption.encryptPassword(newPassword))));
             return true;
         } catch (Exception e) {
             return false;
@@ -286,7 +286,7 @@ public class Querys {
             String randomId;
             do {
                 randomId = MathUtil.generateRandomId();
-            } while (MathUtil.isIdAlreadyUsed(collection, randomId));
+            } while (MathUtil.isIdAlreadyUsedInCollection(collection, randomId));
             Document userDocument = new Document().append("_id", randomId).append("from", fromID).append("to", toID).append("message", message.replace("%20", " ")).append("timestamp", timestamp);
             collection.insertOne(userDocument);
             return true;
@@ -414,7 +414,7 @@ public class Querys {
             String mediaId;
             do {
                 mediaId = MathUtil.generateRandomId();
-            } while (MathUtil.isIdAlreadyUsed(database.getCollection(Config.MEDIA_COLLECTION_NAME), mediaId));
+            } while (MathUtil.isIdAlreadyUsedInCollection(database.getCollection(Config.MEDIA_COLLECTION_NAME), mediaId));
             if (uniqueMediaIDCheck(mediaId)) {
                 return false;
             }

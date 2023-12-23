@@ -7,9 +7,7 @@ import com.sun.net.httpserver.HttpHandler;
 import it.adrian.code.util.database.Config;
 import it.adrian.code.util.database.Querys;
 import it.adrian.code.util.encryption.Encryption;
-import it.adrian.code.util.math.MathUtil;
 import it.adrian.code.util.web.Requests;
-import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -31,9 +29,9 @@ public class HandlerChangePassword implements HttpHandler {
         if (query.contains("current_password") && !(queryParams.get("current_password") == null || queryParams.get("current_password").equals("")) && query.contains("new_password") && !(queryParams.get("new_password") == null || queryParams.get("new_password").equals(""))) {
             JsonNode session = Encryption.getSessionJSON(jwt);
             String currentUsername = session.get("username").asText();
-            String currentHashPassword = MathUtil.encryptPassword(queryParams.get("current_password"));
+            String currentHashPassword = Encryption.encryptPassword(queryParams.get("current_password"));
             if (currentUsername != null) {
-                if (MathUtil.verifyPassword(queryParams.get("current_password"), currentHashPassword)) {
+                if (Encryption.verifyPassword(queryParams.get("current_password"), currentHashPassword)) {
                     Querys.changePassword(currentUsername, queryParams.get("current_password"), queryParams.get("new_password"));
                     responseJson = "{\"success\": \"password was changed for account " + currentUsername + "\"}";
                 } else {
