@@ -1,5 +1,8 @@
 package it.adrian.code.handler.user;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -23,11 +26,11 @@ public class HandlerGetMyUserInformation implements HttpHandler {
             return;
         }
         String responseJson;
-        JSONObject session = Encryption.getSessionJSON(jwt);
-        String currentUsername = session.getString("username");
-        JSONObject jsonObject = new JSONObject();
+        JsonNode session = Encryption.getSessionJSON(jwt);
+        String currentUsername = session.get("username").asText();
+        ObjectNode jsonObject = new ObjectMapper().createObjectNode();
         if (currentUsername != null) {
-            jsonObject.put("_id", Querys.findUserByUsername(currentUsername).get("user_id"));
+            jsonObject.put("_id",  Querys.findUserByUsername(currentUsername).get("user_id"));
             responseJson = jsonObject.toString();
         } else {
             responseJson = "{\"error\": \"invalid token or expired\"}";
