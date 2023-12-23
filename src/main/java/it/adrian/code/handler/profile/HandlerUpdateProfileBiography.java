@@ -1,5 +1,6 @@
 package it.adrian.code.handler.profile;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -29,8 +30,8 @@ public class HandlerUpdateProfileBiography implements HttpHandler {
 
         String responseJson;
         if (query.contains("profile_biography") && !(queryParams.get("profile_biography") == null || queryParams.get("profile_biography").equals(""))) {
-            JSONObject session = Encryption.getSessionJSON(jwt);
-            String currentUsername = session.getString("username");
+            JsonNode session = Encryption.getSessionJSON(jwt);
+            String currentUsername = session.get("username").asText();
             if (Querys.updateBiography(Objects.requireNonNull(Querys.findUserByUsername(currentUsername)).get("user_id"), queryParams.get("profile_biography"))) {
                 responseJson = "{\"success\": \"profile biography was update for account " + currentUsername + "\"}";
             } else {

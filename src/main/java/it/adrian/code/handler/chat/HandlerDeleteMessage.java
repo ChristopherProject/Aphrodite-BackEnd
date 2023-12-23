@@ -1,5 +1,6 @@
 package it.adrian.code.handler.chat;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -28,8 +29,8 @@ public class HandlerDeleteMessage implements HttpHandler {
             return;
         }
         if (query.contains("message_id") && !(queryParams.get("message_id") == null || queryParams.get("message_id").equals(""))) {
-            JSONObject session = Encryption.getSessionJSON(jwt);
-            String currentUsername = session.getString("username");
+            JsonNode session = Encryption.getSessionJSON(jwt);
+            String currentUsername = session.get("username").asText();
             String userID = Objects.requireNonNull(Querys.findUserByUsername(currentUsername)).get("user_id");
             if (Objects.requireNonNull(Querys.getMessageByID(queryParams.get("message_id"))).get("from").equals(userID)) {
                 if (Querys.deleteMessage(queryParams.get("message_id"))) {

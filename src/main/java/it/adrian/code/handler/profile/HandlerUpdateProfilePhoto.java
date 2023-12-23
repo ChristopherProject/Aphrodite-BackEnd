@@ -1,5 +1,6 @@
 package it.adrian.code.handler.profile;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -27,8 +28,8 @@ public class HandlerUpdateProfilePhoto implements HttpHandler {
         Map<String, String> queryParams = Querys.parseURLQuery(query);
         String responseJson;
         if (query.contains("profile_pic_path") && !(queryParams.get("profile_pic_path") == null || queryParams.get("profile_pic_path").equals(""))) {
-            JSONObject session = Encryption.getSessionJSON(jwt);
-            String currentUsername = session.getString("username");
+            JsonNode session = Encryption.getSessionJSON(jwt);
+            String currentUsername = session.get("username").asText();
             if (Querys.updateProfilePhoto(Querys.findUserByUsername(currentUsername).get("user_id"), queryParams.get("profile_pic_path"))) {
                 responseJson = "{\"success\": \"profile photo was update for account " + currentUsername + "\"}";
             } else {

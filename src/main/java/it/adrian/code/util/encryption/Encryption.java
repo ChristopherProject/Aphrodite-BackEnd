@@ -1,6 +1,7 @@
 package it.adrian.code.util.encryption;
 
-import org.json.JSONObject;
+import com.fasterxml.jackson.databind.JsonNode;
+import it.adrian.code.util.json.JSON;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
@@ -85,17 +86,17 @@ public class Encryption {
         return new String(decrypted);
     }
 
-    public static JSONObject getSessionJSON(String jwt) {
+    public static JsonNode getSessionJSON(String jwt) {
         byte[] decodedBytes = Base64.getDecoder().decode(jwt.getBytes(StandardCharsets.UTF_8));
         String decodedJwt = new String(decodedBytes, StandardCharsets.UTF_8);
 
-        byte[] decoderJsonSigned = Base64.getDecoder().decode(new JSONObject(decodedJwt).getString("accessToken").getBytes(StandardCharsets.UTF_8));
+        byte[] decoderJsonSigned = Base64.getDecoder().decode(JSON.parseStringToJson(decodedJwt).get("accessToken").asText().getBytes(StandardCharsets.UTF_8));
         String jsonSignedEncrypt = new String(decoderJsonSigned, StandardCharsets.UTF_8);
         String jsonSignedDecoded = Encryption.readSignature(jsonSignedEncrypt);
 
-        String realJWT = new JSONObject(jsonSignedDecoded).getString("session");
+        String realJWT = JSON.parseStringToJson(jsonSignedDecoded).get("session").asText();
         byte[] decoderJwtJson = Base64.getDecoder().decode(realJWT.getBytes(StandardCharsets.UTF_8));
         String jwtJsonDecoded = new String(decoderJwtJson, StandardCharsets.UTF_8);
-        return new JSONObject(jwtJsonDecoded);
+        return JSON.parseStringToJson(jwtJsonDecoded);
     }
 }

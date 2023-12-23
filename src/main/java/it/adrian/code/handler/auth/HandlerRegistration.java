@@ -1,13 +1,14 @@
 package it.adrian.code.handler.auth;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import it.adrian.code.util.database.Config;
 import it.adrian.code.util.database.Querys;
+import it.adrian.code.util.json.JSON;
 import it.adrian.code.util.math.MathUtil;
 import it.adrian.code.util.web.Requests;
-import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,11 +29,11 @@ public class HandlerRegistration implements HttpHandler {
                 Requests.sendUnauthorizedResponse(t, "invalid request body is empty");
                 return;
             }
-            JSONObject jsonObject = new JSONObject(requestBody);
+            JsonNode jsonObject = JSON.parseStringToJson(requestBody);
             String responseJson;
-            if (requestBody.contains("username") && !(jsonObject.getString("username") == null || jsonObject.getString("username").equals("")) && requestBody.contains("password") && !(jsonObject.getString("password") == null || jsonObject.getString("password").equals(""))) {
-                boolean success = Querys.registerUser(jsonObject.getString("username"), jsonObject.getString("password"));
-                if (jsonObject.getString("password").length() < 8) {
+            if (requestBody.contains("username") && !(jsonObject.get("username").asText() == null || jsonObject.get("username").asText().equals("")) && requestBody.contains("password") && !(jsonObject.get("password").asText() == null || jsonObject.get("password").asText().equals(""))) {
+                boolean success = Querys.registerUser(jsonObject.get("username").asText(), jsonObject.get("password").asText());
+                if (jsonObject.get("password").asText().length() < 8) {
                     Headers headers = t.getResponseHeaders();
                     headers.set("User-Agent", Config.CUSTOM_USER_AGENT);
                     headers.set("Content-Type", "application/json");
@@ -42,9 +43,9 @@ public class HandlerRegistration implements HttpHandler {
                     }
                     return;
                 }
-                String tmp = MathUtil.encryptPassword(jsonObject.getString("password"));
-                String data = "{\"state\": \"success\", \"username\": \"" + jsonObject.getString("username") + "\", \"hash_password\": \"" + tmp + "\"}";
-                responseJson = success ? data : "{\"state\": \"failed\", \"error\": \"this username is already taken\"}";
+                //String tmp = MathUtil.encryptPassword(jsonObject.get("password").asText());
+                //String data = "{\"state\": \"success\", \"username\": \"" + jsonObject.get("username").asText() + "\", \"hash_password\": \"" + tmp + "\"}";
+                responseJson = success ? "{\"state\": \"success\"}" : "{\"state\": \"failed\", \"error\": \"this username is already taken\"}";
             } else {
                 responseJson = "{\"error\": \"401 Unauthorized\"}";
             }

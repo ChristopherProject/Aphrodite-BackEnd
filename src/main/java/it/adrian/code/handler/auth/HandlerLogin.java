@@ -1,16 +1,18 @@
 package it.adrian.code.handler.auth;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import it.adrian.code.util.database.Config;
 import it.adrian.code.util.database.Querys;
+import it.adrian.code.util.json.JSON;
 import it.adrian.code.util.web.Requests;
-import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Objects;
 
 public class HandlerLogin implements HttpHandler {
 
@@ -27,10 +29,10 @@ public class HandlerLogin implements HttpHandler {
                 Requests.sendUnauthorizedResponse(t, "invalid request body is empty");
                 return;
             }
-            JSONObject jsonObject = new JSONObject(requestBody);
+            JsonNode jsonObject = JSON.parseStringToJson(requestBody);
             String responseJson;
-            if (requestBody.contains("username") && !(jsonObject.getString("username") == null || jsonObject.getString("username").equals("")) && requestBody.contains("password") && !(jsonObject.getString("password") == null || jsonObject.getString("password").equals(""))) {
-                responseJson = Querys.authJWTLogin(jsonObject.getString("username"), jsonObject.getString("password"));
+            if (requestBody.contains("username") && !(Objects.requireNonNull(jsonObject).get("username").asText() == null || jsonObject.get("username").asText().equals("")) && requestBody.contains("password") && !(jsonObject.get("password").asText() == null || jsonObject.get("password").asText().equals(""))) {
+                responseJson = Querys.authJWTLogin(jsonObject.get("username").asText(), jsonObject.get("password").asText());
             } else {
                 responseJson = "{\"error\": \"401 Unauthorized\"}";
             }
