@@ -16,9 +16,20 @@
 
     <dependencies>
         <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>1.4.7</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-nop</artifactId>
+            <version>2.0.5</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
-            <version>20220320</version>
+            <version>20230227</version>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -40,7 +51,6 @@
             <artifactId>activation</artifactId>
             <version>1.1.1</version>
         </dependency>
-
     </dependencies>
 
 </project>
