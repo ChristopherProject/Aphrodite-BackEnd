@@ -8,7 +8,6 @@ import it.adrian.code.util.database.Config;
 import it.adrian.code.util.database.Querys;
 import it.adrian.code.util.encryption.Encryption;
 import it.adrian.code.util.web.Requests;
-import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.OutputStream;
