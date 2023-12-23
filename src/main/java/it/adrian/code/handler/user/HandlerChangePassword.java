@@ -1,5 +1,6 @@
 package it.adrian.code.handler.user;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -28,8 +29,8 @@ public class HandlerChangePassword implements HttpHandler {
         Map<String, String> queryParams = Querys.parseURLQuery(query);
         String responseJson = null;
         if (query.contains("current_password") && !(queryParams.get("current_password") == null || queryParams.get("current_password").equals("")) && query.contains("new_password") && !(queryParams.get("new_password") == null || queryParams.get("new_password").equals(""))) {
-            JSONObject session = Encryption.getSessionJSON(jwt);
-            String currentUsername = session.getString("username");
+            JsonNode session = Encryption.getSessionJSON(jwt);
+            String currentUsername = session.get("username").asText();
             String currentHashPassword = MathUtil.encryptPassword(queryParams.get("current_password"));
             if (currentUsername != null) {
                 if (MathUtil.verifyPassword(queryParams.get("current_password"), currentHashPassword)) {

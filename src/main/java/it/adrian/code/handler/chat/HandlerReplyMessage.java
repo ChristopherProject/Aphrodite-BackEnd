@@ -1,5 +1,6 @@
 package it.adrian.code.handler.chat;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -30,8 +31,8 @@ public class HandlerReplyMessage implements HttpHandler {
         Map<String, String> queryParams = Querys.parseURLQuery(query);
         String responseJson = null;
         if (query.contains("message_id") && !(queryParams.get("message_id") == null || queryParams.get("message_id").equals("")) || query.contains("content") && !(queryParams.get("content") == null || queryParams.get("content").equals(""))) {
-            JSONObject session = Encryption.getSessionJSON(jwt);
-            String currentUsername = session.getString("username");
+            JsonNode session = Encryption.getSessionJSON(jwt);
+            String currentUsername = session.get("username").asText();
             String yourChatID = Objects.requireNonNull(Querys.findUserByUsername(currentUsername)).get("user_id");
             if (!yourChatID.equals("")) {
                 boolean isOk = Querys.replyToMessage(yourChatID, queryParams.get("message_id"), queryParams.get("content").replace("%20", " "), MathUtil.getUnixTimestampEpoch());

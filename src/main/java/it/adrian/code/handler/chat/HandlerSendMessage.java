@@ -1,5 +1,6 @@
 package it.adrian.code.handler.chat;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -41,8 +42,8 @@ public class HandlerSendMessage implements HttpHandler {
             JSONObject jsonObject = new JSONObject(requestBody);
             String message = jsonObject.getString("message");
             if (message != null && query.contains("chat_id") && !(queryParams.get("chat_id") == null || queryParams.get("chat_id").equals(""))) {
-                JSONObject session = Encryption.getSessionJSON(jwt);
-                String currentUsername = session.getString("username");
+                JsonNode session = Encryption.getSessionJSON(jwt);
+                String currentUsername = session.get("username").asText();
                 String userID = Querys.findUserByUsername(currentUsername).get("user_id");
                 if (userID != null) {
                     if (Querys.sendMessage(userID, queryParams.get("chat_id"), message, MathUtil.getUnixTimestampEpoch())) {

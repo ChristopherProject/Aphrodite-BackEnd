@@ -1,5 +1,6 @@
 package it.adrian.code.util.database;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.mongodb.client.*;
 import com.mongodb.client.gridfs.GridFSBucket;
 import com.mongodb.client.gridfs.GridFSBuckets;
@@ -10,11 +11,11 @@ import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Updates;
 import com.mongodb.client.result.DeleteResult;
 import it.adrian.code.util.encryption.Encryption;
+import it.adrian.code.util.json.JSON;
 import it.adrian.code.util.math.MathUtil;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
-import org.json.JSONObject;
 
 import java.io.*;
 import java.net.URLDecoder;
@@ -92,27 +93,27 @@ public class Querys {
             long now = MathUtil.secondsUnixTimeStamp();
             byte[] decodedBytes = Base64.getDecoder().decode(jwt.getBytes(StandardCharsets.UTF_8));
             String decodedJwt = new String(decodedBytes, StandardCharsets.UTF_8);
-            JSONObject jsonObject = new JSONObject(decodedJwt);
-            String signature = jsonObject.getString("signature");
+            JsonNode jsonObject = JSON.parseStringToJson(decodedJwt);
+            String signature = jsonObject.get("signature").asText();
             if (signature != null) {
-                JSONObject signatureHeadersJson = new JSONObject(Encryption.readSignature(signature));
-                long creationTime = signatureHeadersJson.getLong("delivered");
-                byte[] decoderJsonSigned = Base64.getDecoder().decode(jsonObject.getString("accessToken").getBytes(StandardCharsets.UTF_8));
+                JsonNode signatureHeadersJson = JSON.parseStringToJson(Encryption.readSignature(signature));
+                long creationTime = signatureHeadersJson.get("delivered").asLong();
+                byte[] decoderJsonSigned = Base64.getDecoder().decode(jsonObject.get("accessToken").asText().getBytes(StandardCharsets.UTF_8));
                 String jsonSignedEncrypt = new String(decoderJsonSigned, StandardCharsets.UTF_8);
                 String jsonSignedDecoded = Encryption.readSignature(jsonSignedEncrypt);
-                JSONObject sessionDataJson = new JSONObject(jsonSignedDecoded);
+                JsonNode sessionDataJson = JSON.parseStringToJson(jsonSignedDecoded);
                 if (sessionDataJson.has("renewal") && sessionDataJson.has("expiration")) {
-                    long renewal = sessionDataJson.getLong("renewal");
-                    long expiration = sessionDataJson.getLong("expiration");
+                    long renewal = sessionDataJson.get("renewal").asLong();
+                    long expiration = sessionDataJson.get("expiration").asLong();
                     long diff = now - creationTime;
                     if (!(diff > expiration)) {
                         boolean validate = MathUtil.isTokenExpiredTime(now, renewal, expiration);
                         if (validate) {
-                            String realJWT = sessionDataJson.getString("session");
+                            String realJWT = sessionDataJson.get("session").asText();
                             byte[] decoderJwtJson = Base64.getDecoder().decode(realJWT.getBytes(StandardCharsets.UTF_8));
                             String jwtJsonDecoded = new String(decoderJwtJson, StandardCharsets.UTF_8);
-                            JSONObject json = new JSONObject(jwtJsonDecoded);
-                            Document userDocument = collection.find(Filters.eq("hash_password", json.getString("hash_password"))).first();
+                            JsonNode json = JSON.parseStringToJson(jwtJsonDecoded);
+                            Document userDocument = collection.find(Filters.eq("hash_password", json.get("hash_password").asText())).first();
                             String storedUsername = Objects.requireNonNull(userDocument).getString("username");
                             return storedUsername != null;
                         }
@@ -327,8 +328,8 @@ public class Querys {
      * @param chatID this data represent other account user_id (unique data)
      * @return this function returned correspondence between two users.
      */
-    public static List<JSONObject> getMessagesBetweenUsers(String userID, String chatID) {
-        final List<JSONObject> messages = new ArrayList<>();
+    public static List<JsonNode> getMessagesBetweenUsers(String userID, String chatID) {
+        final List<JsonNode> messages = new ArrayList<>();
         try (MongoClient mongoClient = MongoClients.create(Config.CONNECTION_STRING)) {
             MongoDatabase database = mongoClient.getDatabase(Config.DATABASE_NAME);
             MongoCollection<Document> collection = database.getCollection(Config.MESSAGE_COLLECTION_NAME);
@@ -343,7 +344,7 @@ public class Querys {
             FindIterable<Document> result = collection.find(query);
             List<Document> allResults = StreamSupport.stream(result.spliterator(), false).collect(Collectors.toList());
             for (Document userDocument : allResults) {
-                messages.add(new JSONObject(userDocument.toJson()));
+                messages.add(JSON.parseStringToJson(userDocument.toJson()));
             }
         } catch (Exception e) {
             return null;

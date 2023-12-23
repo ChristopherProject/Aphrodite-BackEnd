@@ -1,5 +1,6 @@
 package it.adrian.code.handler.chat;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -29,10 +30,10 @@ public class HandlerChatUpdate implements HttpHandler {
         Map<String, String> queryParams = Querys.parseURLQuery(query);
         String responseJson;
         if (query.contains("chat_id") && !(queryParams.get("chat_id") == null || queryParams.get("chat_id").equals(""))) {
-            JSONObject session = Encryption.getSessionJSON(jwt);
-            String currentUsername = session.getString("username");
+            JsonNode session = Encryption.getSessionJSON(jwt);
+            String currentUsername = session.get("username").asText();
             String yourChatID = Objects.requireNonNull(Querys.findUserByUsername(currentUsername)).get("user_id");
-            List<JSONObject> messages = Querys.getMessagesBetweenUsers(yourChatID, queryParams.get("chat_id"));
+            List<JsonNode> messages = Querys.getMessagesBetweenUsers(yourChatID, queryParams.get("chat_id"));
             assert messages != null;
             responseJson = messages.toString();
         } else {
