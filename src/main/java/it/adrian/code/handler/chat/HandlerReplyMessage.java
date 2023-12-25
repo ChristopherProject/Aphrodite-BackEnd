@@ -11,7 +11,6 @@ import it.adrian.code.util.math.MathUtil;
 import it.adrian.code.util.web.Requests;
 import org.bson.Document;
 
-
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Map;
@@ -24,7 +23,7 @@ public class HandlerReplyMessage implements HttpHandler {
         Requests.corsSettings(t);
         final String jwt = Requests.extractTokenFromHeader(t.getRequestHeaders().getFirst("Authorization"));
         if (jwt == null || !Querys.validateJWT(jwt)) {
-            Requests.sendUnauthorizedResponse(t, "cannot reply to current message invalid or expired token.");
+            Requests.sendUnauthorizedResponse(t, Requests.RESPONSES.UNAUTHORIZED, "cannot reply to current message invalid or expired token.");
             return;
         }
         String query = t.getRequestURI().getQuery();

@@ -7,7 +7,6 @@ import com.sun.net.httpserver.HttpHandler;
 import it.adrian.code.util.database.Config;
 import it.adrian.code.util.database.Querys;
 import it.adrian.code.util.json.JSON;
-import it.adrian.code.util.math.MathUtil;
 import it.adrian.code.util.web.Requests;
 
 import java.io.IOException;
@@ -26,7 +25,7 @@ public class HandlerRegistration implements HttpHandler {
             while ((b = is.read()) != -1) requestBodyBuilder.append((char) b);
             String requestBody = requestBodyBuilder.toString();
             if (requestBody.isEmpty()) {
-                Requests.sendUnauthorizedResponse(t, "invalid request body is empty");
+                Requests.sendUnauthorizedResponse(t, Requests.RESPONSES.BAD_REQUEST, "invalid request body is empty");
                 return;
             }
             JsonNode jsonObject = JSON.parseStringToJson(requestBody);
@@ -34,17 +33,9 @@ public class HandlerRegistration implements HttpHandler {
             if (requestBody.contains("username") && !(jsonObject.get("username").asText() == null || jsonObject.get("username").asText().equals("")) && requestBody.contains("password") && !(jsonObject.get("password").asText() == null || jsonObject.get("password").asText().equals(""))) {
                 boolean success = Querys.registerUser(jsonObject.get("username").asText(), jsonObject.get("password").asText());
                 if (jsonObject.get("password").asText().length() < 8) {
-                    Headers headers = t.getResponseHeaders();
-                    headers.set("User-Agent", Config.CUSTOM_USER_AGENT);
-                    headers.set("Content-Type", "application/json");
-                    t.sendResponseHeaders(400, 0);
-                    try (OutputStream os = t.getResponseBody()) {
-                        os.write("{\"error\": \"too short password, please select another one\"}".getBytes());
-                    }
+                    Requests.sendUnauthorizedResponse(t, Requests.RESPONSES.BAD_REQUEST, "too short password, please select another one");
                     return;
                 }
-                //String tmp = MathUtil.encryptPassword(jsonObject.get("password").asText());
-                //String data = "{\"state\": \"success\", \"username\": \"" + jsonObject.get("username").asText() + "\", \"hash_password\": \"" + tmp + "\"}";
                 responseJson = success ? "{\"state\": \"success\"}" : "{\"state\": \"failed\", \"error\": \"this username is already taken\"}";
             } else {
                 responseJson = "{\"error\": \"401 Unauthorized\"}";
@@ -58,7 +49,7 @@ public class HandlerRegistration implements HttpHandler {
             os.write(responseJson.getBytes());
             os.close();
         } else {
-            Requests.sendUnauthorizedResponse(t, "405 Method Not Allowed");
+            Requests.sendUnauthorizedResponse(t, Requests.RESPONSES.METHOD_NOT_ALLOWED, "invalid call method");
         }
     }
 }

@@ -9,7 +9,6 @@ import it.adrian.code.util.database.Querys;
 import it.adrian.code.util.encryption.Encryption;
 import it.adrian.code.util.web.Requests;
 
-
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Map;
@@ -21,7 +20,7 @@ public class HandlerUpdateProfilePhoto implements HttpHandler {
         Requests.corsSettings(t);
         final String jwt = Requests.extractTokenFromHeader(t.getRequestHeaders().getFirst("Authorization"));
         if (jwt == null || !Querys.validateJWT(jwt)) {
-            Requests.sendUnauthorizedResponse(t, "token is invalid or expired cant retrieve userData information to complete this operation.");
+            Requests.sendUnauthorizedResponse(t, Requests.RESPONSES.UNAUTHORIZED, "token is invalid or expired cant retrieve userData information to complete this operation.");
             return;
         }
         String query = t.getRequestURI().getQuery();

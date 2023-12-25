@@ -26,7 +26,7 @@ public class HandlerLogin implements HttpHandler {
             while ((b = is.read()) != -1) requestBodyBuilder.append((char) b);
             String requestBody = requestBodyBuilder.toString();
             if (requestBody.isEmpty()) {
-                Requests.sendUnauthorizedResponse(t, "invalid request body is empty");
+                Requests.sendUnauthorizedResponse(t, Requests.RESPONSES.UNAUTHORIZED, "invalid request body is empty");
                 return;
             }
             JsonNode jsonObject = JSON.parseStringToJson(requestBody);
@@ -45,7 +45,7 @@ public class HandlerLogin implements HttpHandler {
             os.write(responseJson.getBytes());
             os.close();
         } else {
-            Requests.sendUnauthorizedResponse(t, "405 Method Not Allowed");
+            Requests.sendUnauthorizedResponse(t, Requests.RESPONSES.METHOD_NOT_ALLOWED, "invalid call method");
         }
     }
 }

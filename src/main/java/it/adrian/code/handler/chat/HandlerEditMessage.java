@@ -10,7 +10,6 @@ import it.adrian.code.util.encryption.Encryption;
 import it.adrian.code.util.json.JSON;
 import it.adrian.code.util.web.Requests;
 
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -28,7 +27,7 @@ public class HandlerEditMessage implements HttpHandler {
         if ("POST".equals(t.getRequestMethod())) {
             final String jwt = Requests.extractTokenFromHeader(t.getRequestHeaders().getFirst("Authorization"));
             if (jwt == null || !Querys.validateJWT(jwt)) {
-                Requests.sendUnauthorizedResponse(t, "cannot edit message invalid or expired token.");
+                Requests.sendUnauthorizedResponse(t, Requests.RESPONSES.UNAUTHORIZED, "cannot edit message invalid or expired token.");
                 return;
             }
             InputStream is = t.getRequestBody();
@@ -37,7 +36,7 @@ public class HandlerEditMessage implements HttpHandler {
             while ((b = is.read()) != -1) requestBodyBuilder.append((char) b);
             String requestBody = requestBodyBuilder.toString();
             if (requestBody.isEmpty()) {
-                Requests.sendUnauthorizedResponse(t, "invalid request body is empty");
+                Requests.sendUnauthorizedResponse(t, Requests.RESPONSES.BAD_REQUEST, "invalid request body is empty");
                 return;
             }
             JsonNode jsonObject = JSON.parseStringToJson(requestBody);
@@ -66,7 +65,7 @@ public class HandlerEditMessage implements HttpHandler {
             os.write(responseJson.getBytes());
             os.close();
         } else {
-            Requests.sendUnauthorizedResponse(t, "405 Method Not Allowed");
+            Requests.sendUnauthorizedResponse(t, Requests.RESPONSES.METHOD_NOT_ALLOWED, "invalid call method");
         }
     }
 }
