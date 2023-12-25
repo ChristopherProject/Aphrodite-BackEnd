@@ -22,7 +22,7 @@ public class HandlerChatUpdate implements HttpHandler {
         Requests.corsSettings(t);
         final String jwt = Requests.extractTokenFromHeader(t.getRequestHeaders().getFirst("Authorization"));
         if (jwt == null || !Querys.validateJWT(jwt)) {
-            Requests.sendUnauthorizedResponse(t, "invalid authorization to get this chat, no session userData token found.");
+            Requests.sendUnauthorizedResponse(t, Requests.RESPONSES.UNAUTHORIZED, "invalid authorization to get this chat, no session userData token found.");
             return;
         }
         String query = t.getRequestURI().getQuery();
