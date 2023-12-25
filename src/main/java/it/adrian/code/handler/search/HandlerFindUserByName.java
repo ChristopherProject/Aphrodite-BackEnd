@@ -18,7 +18,7 @@ public class HandlerFindUserByName implements HttpHandler {
         Requests.corsSettings(t);
         final String jwt = Requests.extractTokenFromHeader(t.getRequestHeaders().getFirst("Authorization"));
         if (jwt == null || !Querys.validateJWT(jwt)) {
-            Requests.sendUnauthorizedResponse(t, "cant find user because jwt is expired or invalid.");
+            Requests.sendUnauthorizedResponse(t, Requests.RESPONSES.UNAUTHORIZED, "cant find user because jwt is expired or invalid.");
             return;
         }
         String query = t.getRequestURI().getQuery();

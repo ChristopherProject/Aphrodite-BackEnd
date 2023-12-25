@@ -11,7 +11,6 @@ import it.adrian.code.util.database.Querys;
 import it.adrian.code.util.encryption.Encryption;
 import it.adrian.code.util.web.Requests;
 
-
 import java.io.IOException;
 import java.io.OutputStream;
 
@@ -22,7 +21,7 @@ public class HandlerGetMyUserInformation implements HttpHandler {
         Requests.corsSettings(t);
         final String jwt = Requests.extractTokenFromHeader(t.getRequestHeaders().getFirst("Authorization"));
         if (jwt == null || !Querys.validateJWT(jwt)) {
-            Requests.sendUnauthorizedResponse(t, "impossible find userData without valid jwt.");
+            Requests.sendUnauthorizedResponse(t, Requests.RESPONSES.UNAUTHORIZED, "impossible find userData without valid jwt.");
             return;
         }
         String responseJson;

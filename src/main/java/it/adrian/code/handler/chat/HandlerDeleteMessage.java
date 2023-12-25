@@ -24,7 +24,7 @@ public class HandlerDeleteMessage implements HttpHandler {
         String responseJson = null;
         final String jwt = Requests.extractTokenFromHeader(t.getRequestHeaders().getFirst("Authorization"));
         if (jwt == null || !Querys.validateJWT(jwt)) {
-            Requests.sendUnauthorizedResponse(t, "cannot delete current message invalid or expired token.");
+            Requests.sendUnauthorizedResponse(t, Requests.RESPONSES.UNAUTHORIZED, "cannot delete current message invalid or expired token.");
             return;
         }
         if (query.contains("message_id") && !(queryParams.get("message_id") == null || queryParams.get("message_id").equals(""))) {
