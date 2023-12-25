@@ -10,9 +10,8 @@ import it.adrian.code.util.encryption.Encryption;
 import it.adrian.code.util.json.JSON;
 import it.adrian.code.util.web.Requests;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Objects;
 
@@ -33,7 +32,14 @@ public class HandlerEditMessage implements HttpHandler {
             InputStream is = t.getRequestBody();
             StringBuilder requestBodyBuilder = new StringBuilder();
             int b;
-            while ((b = is.read()) != -1) requestBodyBuilder.append((char) b);
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
+                while ((b = reader.read()) != -1) {
+                    requestBodyBuilder.append((char) b);
+                }
+            } catch (IOException e) {
+                Requests.sendUnauthorizedResponse(t, Requests.RESPONSES.INTERNAL_SERVER_ERROR, "invalid request cant retrieve message");
+                return;
+            }
             String requestBody = requestBodyBuilder.toString();
             if (requestBody.isEmpty()) {
                 Requests.sendUnauthorizedResponse(t, Requests.RESPONSES.BAD_REQUEST, "invalid request body is empty");

@@ -21,8 +21,8 @@ public class JSON {
     public static JsonNode parseStringToJson(String src) {
         try {
             final ObjectMapper objectMapper = new ObjectMapper();
-            return objectMapper.readTree(src);
-        } catch (JsonProcessingException e) {
+            return objectMapper.readTree(src.getBytes("UTF-8"));
+        } catch (Exception e) {
             return null;
         }
     }
