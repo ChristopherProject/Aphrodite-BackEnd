@@ -64,11 +64,19 @@ public class Querys {
             }
             Document userDocument = collection.find(Filters.eq("username", username)).first();
             String storedHashPassword = Objects.requireNonNull(userDocument).getString("hash_password");
+
+            if(!userDocument.containsKey("role")){
+                collection.updateOne(Filters.eq("username", username), new Document("$set", new Document("role", "user")));
+            }
+            String role = userDocument.getString("role");
+            if(!(role.equalsIgnoreCase("staff") || role.equalsIgnoreCase("user"))){
+                return "{\"error\": \"internal error, invalid role\"}";
+            }
             if (Encryption.verifyPassword(password, storedHashPassword)) {
                 long renewal = MathUtil.secondsUnixTimeStamp();
                 long expiration = (renewal + 7000);
                 String header = "{\"certificate\":\"Aphrodite\",\"type\":\"JWT\", \"version\": \"1.0\"" + ",\"delivered\": " + renewal + "}";
-                String data = "{\"state\": \"success\", \"username\": \"" + username + "\", \"hash_password\": \"" + storedHashPassword + "\"}";
+                String data = "{\"state\": \"success\", \"username\": \"" + username + "\", \"hash_password\": \"" + storedHashPassword + "\", \"role\": \"" + role + "\"}";
                 String jwt = Base64.getEncoder().encodeToString(data.getBytes());
                 String session = Encryption.signateDocument("{\"session\":\"" + jwt + "\"," + "\"renewal\": " + renewal + "," + "\"serial\": " + findUserByUsername(username).get("user_id") + "," + "\"expiration\": " + expiration + "}");
                 String jsonSigned = "{\"accessToken\": \"" + Base64.getEncoder().encodeToString(session.getBytes()) + "\", \"signature\": \"" + Encryption.signateDocument(header) + "\"}";
