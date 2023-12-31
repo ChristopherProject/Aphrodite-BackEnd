@@ -32,7 +32,7 @@ public class Querys {
      * @param password account password (this was hashed in database)
      * @return this function return boolean to see if registration process work correctly.
      */
-    public static boolean registerUser(String username, String password) {
+    public static boolean registerUser(String username, String password, String number) {
         try (MongoClient mongoClient = MongoClients.create(Config.CONNECTION_STRING)) {
             MongoDatabase database = mongoClient.getDatabase(Config.DATABASE_NAME);
             MongoCollection<Document> collection = database.getCollection(Config.USER_COLLECTION_NAME);
@@ -43,7 +43,7 @@ public class Querys {
             if (uniqueUserIDCheck(username)) {
                 return false;
             }
-            Document userDocument = new Document().append("_id", randomId).append("username", username).append("hash_password", Encryption.encryptPassword(password));
+            Document userDocument = new Document().append("_id", randomId).append("username", username).append("number", number).append("hash_password", Encryption.encryptPassword(password));
             collection.insertOne(userDocument);
         }
         return true;
