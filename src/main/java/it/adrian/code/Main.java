@@ -31,7 +31,7 @@ public final class Main {
         server.createContext("/api/login", new HandlerLogin());//POST, http://localhost:419/api/login, { "username": "Adrian", "password": "JAC419" }
         server.createContext("/api/register", new HandlerRegistration());//POST, http://localhost:419/api/register, { "username": "Adrian", "password": "JAC419", "country_code": "+39", "number": "3519508016" }
         System.out.println("«Aphrodite» init user request..");
-        server.createContext("/api/getMyID", new HandlerGetMyUserInformation());//GET
+        server.createContext("/api/getMe", new HandlerGetMyUserInformation());//GET
         server.createContext("/api/getUserById", new HandlerFindUserById());//GET, http://localhost:419/api/getUserById?user_id=5288764
         server.createContext("/api/getUserByName", new HandlerFindUserByName());//GET, http://localhost:419/api/getUserByName?username=Adrian
         server.createContext("/api/changePassword", new HandlerChangePassword());//GET, http://localhost:419/api/changePassword?current_password=JAC419&new_password=JAC4192

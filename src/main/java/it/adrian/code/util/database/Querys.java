@@ -272,6 +272,7 @@ public class Querys {
                 user_information.put("username", userDocument.getString("username"));
                 user_information.put("biography", userDocument.getString("biography"));
                 user_information.put("profile_pic", userDocument.getString("profile_pic"));
+                user_information.put("phone_number", MathUtil.formatPhoneNumber(userDocument.getString("number")));
                 return user_information;
             } else {
                 return null;

@@ -29,7 +29,8 @@ public class HandlerGetMyUserInformation implements HttpHandler {
         String currentUsername = session.get("username").asText();
         ObjectNode jsonObject = new ObjectMapper().createObjectNode();
         if (currentUsername != null) {
-            jsonObject.put("_id",  Querys.findUserByUsername(currentUsername).get("user_id"));
+            jsonObject.put("user_id",  Querys.findUserByUsername(currentUsername).get("user_id"));
+            jsonObject.put("phone_number",  Querys.findUserByUsername(currentUsername).get("phone_number"));
             responseJson = jsonObject.toString();
         } else {
             responseJson = "{\"error\": \"invalid token or expired\"}";

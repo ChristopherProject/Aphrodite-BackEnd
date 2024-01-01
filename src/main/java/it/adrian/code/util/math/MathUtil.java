@@ -39,4 +39,12 @@ public class MathUtil {
     public static boolean isTokenExpiredTime(long now, long renewal, long expiration) {
         return now >= renewal && now <= expiration;
     }
+
+    public static String formatPhoneNumber(String numeroTelefono) {
+        StringBuilder stringBuilder = new StringBuilder(numeroTelefono);
+        stringBuilder.insert(3, ' ');
+        stringBuilder.insert(7, ' ');
+        stringBuilder.insert(11, ' ');
+        return stringBuilder.toString();
+    }
 }
