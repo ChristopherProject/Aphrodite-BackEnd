@@ -231,6 +231,7 @@ public class Querys {
             MongoCollection<Document> collection = database.getCollection(Config.USER_COLLECTION_NAME);
             Document query = new Document("_id", userId);
             Document userDocument = collection.find(query).first();
+
             if (userDocument != null) {
                 Bson update = Updates.set("profile_pic", profile_pic);
                 Bson filter = Filters.eq("_id", userId);
@@ -243,6 +244,7 @@ public class Querys {
             return false;
         }
     }
+
 
     /***
      *
