@@ -1,0 +1,6 @@
+server_name: 'Aphrodite'
+
+chat_server_port: 419
+media_server_port: 80
+
+media_data_directory_path: 'C:/temp'

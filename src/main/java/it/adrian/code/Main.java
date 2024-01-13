@@ -10,34 +10,41 @@ import it.adrian.code.handler.search.HandlerFindUserById;
 import it.adrian.code.handler.search.HandlerFindUserByName;
 import it.adrian.code.handler.user.HandlerChangePassword;
 import it.adrian.code.handler.user.HandlerGetMyUserInformation;
+import it.adrian.code.service.MediaServerRoute;
+import it.adrian.code.util.system.Configuration;
 import it.adrian.code.util.system.DynamicInstaller;
 import it.adrian.code.util.web.Requests;
+import lombok.Getter;
 
 import java.net.InetSocketAddress;
 
 public final class Main {
 
+    @Getter
+    private static final Configuration configuration = new Configuration();
+    private static final String SERVER_NAME = configuration.getDataByKey("server_name");
+
     static {
-        System.out.println("«Aphrodite» check and validate integrity..");
-        if(!DynamicInstaller.checkMongoDB()){
+        System.out.println("«" + SERVER_NAME + "» check and validate integrity..");
+        if (!DynamicInstaller.checkMongoDB()) {
             DynamicInstaller.install();
         }
     }
 
     public static void main(String... args) throws Exception {
-        final HttpServer server = HttpServer.create(new InetSocketAddress(419), 0);
+        final HttpServer server = HttpServer.create(new InetSocketAddress(Integer.parseInt(configuration.getDataByKey("chat_server_port"))), 0);
         server.createContext("/", Requests::corsSettings);
-        System.out.println("«Aphrodite» init auth request..");
+        System.out.println("«" + SERVER_NAME + "» init auth request..");
         server.createContext("/api/login", new HandlerLogin());//POST, http://localhost:419/api/login, { "username": "Adrian", "password": "JAC419" }
         server.createContext("/api/register", new HandlerRegistration());//POST, http://localhost:419/api/register, { "username": "Adrian", "password": "JAC419", "country_code": "+39", "number": "3519508016" }
-        System.out.println("«Aphrodite» init user request..");
+        System.out.println("«" + SERVER_NAME + "» init user request..");
         server.createContext("/api/getMe", new HandlerGetMyUserInformation());//GET
         server.createContext("/api/getUserById", new HandlerFindUserById());//GET, http://localhost:419/api/getUserById?user_id=5288764
         server.createContext("/api/getUserByName", new HandlerFindUserByName());//GET, http://localhost:419/api/getUserByName?username=Adrian
         server.createContext("/api/changePassword", new HandlerChangePassword());//GET, http://localhost:419/api/changePassword?current_password=JAC419&new_password=JAC4192
         server.createContext("/api/updateProfilePhoto", new HandlerUpdateProfilePhoto());//GET, http://localhost:419/api/updateProfilePhoto?profile_pic_path=https://i.imgur.com/18ND4et.png
         server.createContext("/api/updateProfileBiography", new HandlerUpdateProfileBiography());//GET, http://localhost:419/api/updateProfileBiography?profile_biography=hey%20im%20using%20aphrodite
-        System.out.println("«Aphrodite» init messaging request..");
+        System.out.println("«" + SERVER_NAME + "» init messaging request..");
         server.createContext("/api/sendMessage", new HandlerSendMessage());//POST, http://localhost:419/api/sendMessage?chat_id=6741019, { "message": "ciao, come stai?" }
         server.createContext("/api/editMessage", new HandlerEditMessage());//POST, http://localhost:419/api/editMessage?message_id=9824250, { "message_content": "messaggio cambiato!" }
         server.createContext("/api/deleteMessage", new HandlerDeleteMessage());//GET, http://localhost:419/api/deleteMessage?message_id=123123123
@@ -45,7 +52,7 @@ public final class Main {
         server.createContext("/api/replyMessage", new HandlerReplyMessage());//GET, http://localhost:419/api/replyMessage?message_id=8994247&content=ciaoo%20tutto%20bene%20tu?
         server.setExecutor(null);
         server.start();
-        System.out.println("«Aphrodite» server init done. the service started on port 419");
+        MediaServerRoute.init(SERVER_NAME, Integer.parseInt(configuration.getDataByKey("media_server_port")));//hehe not using apache shit
         System.runFinalization();
         System.gc();
     }
