@@ -10,7 +10,7 @@ import it.adrian.code.handler.search.HandlerFindUserById;
 import it.adrian.code.handler.search.HandlerFindUserByName;
 import it.adrian.code.handler.user.HandlerChangePassword;
 import it.adrian.code.handler.user.HandlerGetMyUserInformation;
-import it.adrian.code.service.MediaServerRoute;
+import it.adrian.code.util.service.MediaServerRoute;
 import it.adrian.code.util.system.Configuration;
 import it.adrian.code.util.system.DynamicInstaller;
 import it.adrian.code.util.web.Requests;

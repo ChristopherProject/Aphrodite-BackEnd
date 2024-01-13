@@ -1,4 +1,4 @@
-package it.adrian.code.service;
+package it.adrian.code.util.service;
 
 import it.adrian.code.Main;
 
