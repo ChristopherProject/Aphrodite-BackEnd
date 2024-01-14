@@ -26,7 +26,7 @@ public class Configuration {
         return yamlData;
     }
 
-    public String getDataByKey(String key) {
+    private String getDataByKey(String key) {
         try {
             final InputStream inputStream = new FileInputStream(System.getProperty("user.dir") + File.separator + "config.yaml");
             if (inputStream != null) {
@@ -39,5 +39,18 @@ public class Configuration {
             return "";
         }
         return "";
+    }
+
+
+    public String getString(String key){
+        return getDataByKey(key);
+    }
+
+    public boolean getBoolean(String key){
+        return Boolean.parseBoolean(getDataByKey(key));
+    }
+
+    public int getInt(String key){
+        return  Integer.parseInt(getDataByKey(key));
     }
 }

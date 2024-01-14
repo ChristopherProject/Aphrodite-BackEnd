@@ -22,7 +22,7 @@ public final class Main {
 
     @Getter
     private static final Configuration configuration = new Configuration();
-    private static final String SERVER_NAME = configuration.getDataByKey("server_name");
+    private static final String SERVER_NAME = configuration.getString("server_name");
 
     static {
         System.out.println("«" + SERVER_NAME + "» check and validate integrity..");
@@ -32,7 +32,7 @@ public final class Main {
     }
 
     public static void main(String... args) throws Exception {
-        final HttpServer server = HttpServer.create(new InetSocketAddress(Integer.parseInt(configuration.getDataByKey("chat_server_port"))), 0);
+        final HttpServer server = HttpServer.create(new InetSocketAddress(configuration.getInt("chat_server_port")), 0);
         server.createContext("/", Requests::corsSettings);
         System.out.println("«" + SERVER_NAME + "» init auth request..");
         server.createContext("/api/login", new HandlerLogin());//POST, http://localhost:419/api/login, { "username": "Adrian", "password": "JAC419" }
@@ -52,7 +52,7 @@ public final class Main {
         server.createContext("/api/replyMessage", new HandlerReplyMessage());//GET, http://localhost:419/api/replyMessage?message_id=8994247&content=ciaoo%20tutto%20bene%20tu?
         server.setExecutor(null);
         server.start();
-        MediaServerRoute.init(SERVER_NAME, Integer.parseInt(configuration.getDataByKey("media_server_port")));//hehe not using apache shit
+        MediaServerRoute.init(SERVER_NAME, configuration.getInt("media_server_port"));//hehe not using apache shit
         System.runFinalization();
         System.gc();
     }
