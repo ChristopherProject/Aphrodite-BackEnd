@@ -1,6 +1,7 @@
 package it.adrian.code.util.service;
 
 import it.adrian.code.Main;
+import lombok.Getter;
 
 import java.io.*;
 import java.net.ServerSocket;
@@ -14,10 +15,11 @@ import java.nio.file.Files;
  */
 public class MediaServerRoute {
 
-    private static final String BASE_DIRECTORY = Main.getConfiguration().getBoolean("use_default_path") ? System.getProperty("user.dir") + File.separator + "medias" : Main.getConfiguration().getString("media_data_directory_path");  // http://localhost/example_dir/example_file.png
+    @Getter
+    private static final String MEDIA_DIR = Main.getConfiguration().getBoolean("use_default_path") ? System.getProperty("user.dir") + File.separator + "medias" : Main.getConfiguration().getString("media_data_directory_path");  // http://localhost/example_dir/example_file.png
 
     public static void init(String serverName, int port){
-        final File path = new File(BASE_DIRECTORY);
+        final File path = new File(MEDIA_DIR);
         if(!path.exists())path.mkdirs();
         try (ServerSocket serverSocket = new ServerSocket(port)) {
             System.out.println("«" +  serverName + "» service working on port " + port);
@@ -45,7 +47,7 @@ public class MediaServerRoute {
         String[] requestParts = requestLine.split(" ");
         String filePath = requestParts[1].substring(1);
 
-        File file = new File(BASE_DIRECTORY, filePath);
+        File file = new File(MEDIA_DIR, filePath);
         if (file.exists() && filePath.endsWith(".png")) {
             byte[] fileContent = Files.readAllBytes(file.toPath());
             String responseHeader = "HTTP/1.1 200 OK\r\n" +
