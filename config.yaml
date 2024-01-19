@@ -1,0 +1,8 @@
+server_name: 'Aphrodite'
+
+chat_server_port: 419
+media_server_port: 80
+
+use_default_path: true
+media_server_domain: 'nobusware.it'
+media_data_directory_path: 'C:/temp'

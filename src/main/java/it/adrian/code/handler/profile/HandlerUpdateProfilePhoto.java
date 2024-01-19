@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
+import it.adrian.code.Main;
 import it.adrian.code.util.database.Config;
 import it.adrian.code.util.database.Querys;
 import it.adrian.code.util.encryption.Encryption;
@@ -72,7 +73,6 @@ public class HandlerUpdateProfilePhoto implements HttpHandler {
         }
     }
 
-
     private String saveAvatar(InputStream inputStream, String userId, String fileExtension) throws IOException {//remeber it isn't normal file but binary ^^
         String userDirectory = MediaServerRoute.getMEDIA_DIR() + File.separator + Encryption.encryptPassword(userId) + File.separator + Base64.getEncoder().encodeToString((Encryption.encryptPassword(userId + new Random().nextInt(10000))).getBytes()).replace("=", "");
         String fileName = generateFileName(userId, fileExtension);
@@ -86,7 +86,7 @@ public class HandlerUpdateProfilePhoto implements HttpHandler {
                 outputStream.write(buffer, 0, bytesRead);
             }
         }
-        return "http://localhost" + userDirectory.replace(MediaServerRoute.getMEDIA_DIR(), "").replace(File.separator, "/") + "/" + filePath.toFile().getName();
+        return "http://"  + Main.getConfiguration().getString("media_server_domain") + userDirectory.replace(MediaServerRoute.getMEDIA_DIR(), "").replace(File.separator, "/") + "/" + filePath.toFile().getName();
     }
 
     private String generateFileName(String userId, String fileExtension) {
