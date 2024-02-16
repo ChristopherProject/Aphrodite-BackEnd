@@ -13,7 +13,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-public class HandlerRegistration implements HttpHandler {//add number or email (propenso per il numero)
+public class HandlerRegistration implements HttpHandler {
 
     @Override
     public void handle(HttpExchange t) throws IOException {
